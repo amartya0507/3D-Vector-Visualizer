@@ -8,88 +8,82 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Three.js r128 + OrbitControls CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-
     <!-- Google Fonts: Inter & JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+    <!-- Three.js v0.160.0 & OrbitControls ES Module Import Map -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+
     <style>
         /* =====================================================================
-           DESIGN TOKENS & LIQUID GLASS THEME SYSTEM (DARK & LIGHT MODES)
+           APPLE-INSPIRED LIQUID GLASS DESIGN TOKENS (DARK & LIGHT MODES)
            ===================================================================== */
         :root {
             --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
             --transition-theme: 0.45s cubic-bezier(0.22, 1, 0.36, 1);
         }
 
-        /* Dark Mode: Deep Smoked Obsidian Liquid Glass */
+        /* Dark Mode: Smoked Obsidian Liquid Glass */
         html[data-theme="dark"] {
-            --bg-base: #070b14;
-            --bg-mesh-1: rgba(56, 189, 248, 0.14);
-            --bg-mesh-2: rgba(244, 63, 94, 0.11);
-            --bg-mesh-3: rgba(16, 185, 129, 0.10);
+            --bg-base: #060a12;
+            --orb-1: rgba(56, 189, 248, 0.16);
+            --orb-2: rgba(244, 63, 94, 0.12);
+            --orb-3: rgba(16, 185, 129, 0.12);
 
-            --glass-bg: linear-gradient(135deg, rgba(22, 30, 48, 0.68) 0%, rgba(12, 18, 30, 0.54) 100%);
-            --glass-bg-elevated: linear-gradient(135deg, rgba(30, 41, 64, 0.78) 0%, rgba(15, 23, 42, 0.64) 100%);
-            --glass-card: rgba(255, 255, 255, 0.04);
-            --glass-card-hover: rgba(255, 255, 255, 0.075);
+            --glass-bg: linear-gradient(135deg, rgba(20, 28, 46, 0.68) 0%, rgba(10, 16, 28, 0.52) 100%);
+            --glass-card: rgba(255, 255, 255, 0.042);
+            --glass-card-hover: rgba(255, 255, 255, 0.072);
 
-            --glass-border: rgba(255, 255, 255, 0.14);
-            --glass-border-subtle: rgba(255, 255, 255, 0.08);
-            --glass-specular: inset 0 1px 0 0 rgba(255, 255, 255, 0.22), inset 1px 0 0 0 rgba(255, 255, 255, 0.10);
-            --glass-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.65), 0 4px 16px -4px rgba(0, 0, 0, 0.45);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --glass-border-subtle: rgba(255, 255, 255, 0.085);
+            --glass-specular: inset 0 1px 0 0 rgba(255, 255, 255, 0.28), inset 1px 0 0 0 rgba(255, 255, 255, 0.10);
+            --glass-shadow: 0 22px 50px -12px rgba(0, 0, 0, 0.68), 0 4px 18px -4px rgba(0, 0, 0, 0.48);
 
             --text-primary: #f8fafc;
             --text-secondary: #94a3b8;
             --text-muted: #64748b;
 
-            --pill-bg: rgba(255, 255, 255, 0.13);
-            --pill-border: rgba(255, 255, 255, 0.22);
-            --input-bg: rgba(7, 11, 20, 0.55);
-            --track-bg: rgba(255, 255, 255, 0.12);
+            --pill-bg: rgba(255, 255, 255, 0.14);
+            --pill-border: rgba(255, 255, 255, 0.24);
+            --input-bg: rgba(6, 10, 18, 0.58);
+            --track-bg: rgba(255, 255, 255, 0.13);
             --divider: rgba(255, 255, 255, 0.09);
-
-            --label-bg: rgba(10, 15, 28, 0.72);
-            --label-border: rgba(255, 255, 255, 0.16);
-            --label-shadow: 0 4px 14px rgba(0, 0, 0, 0.55);
-            --axis-label-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
         }
 
-        /* Light Mode: Frosted Luminous Crystal White Liquid Glass */
+        /* Light Mode: Luminous Frosted Crystal Liquid Glass */
         html[data-theme="light"] {
-            --bg-base: #eef3f9;
-            --bg-mesh-1: rgba(56, 189, 248, 0.20);
-            --bg-mesh-2: rgba(244, 63, 94, 0.12);
-            --bg-mesh-3: rgba(16, 185, 129, 0.14);
+            --bg-base: #ecf2f9;
+            --orb-1: rgba(56, 189, 248, 0.22);
+            --orb-2: rgba(244, 63, 94, 0.13);
+            --orb-3: rgba(16, 185, 129, 0.15);
 
-            --glass-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.76) 0%, rgba(244, 248, 255, 0.58) 100%);
-            --glass-bg-elevated: linear-gradient(135deg, rgba(255, 255, 255, 0.88) 0%, rgba(248, 250, 252, 0.72) 100%);
-            --glass-card: rgba(255, 255, 255, 0.56);
-            --glass-card-hover: rgba(255, 255, 255, 0.80);
+            --glass-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.78) 0%, rgba(242, 247, 255, 0.58) 100%);
+            --glass-card: rgba(255, 255, 255, 0.58);
+            --glass-card-hover: rgba(255, 255, 255, 0.84);
 
-            --glass-border: rgba(255, 255, 255, 0.82);
+            --glass-border: rgba(255, 255, 255, 0.86);
             --glass-border-subtle: rgba(15, 23, 42, 0.08);
-            --glass-specular: inset 0 1.5px 0 0 rgba(255, 255, 255, 0.95), inset 1px 0 0 0 rgba(255, 255, 255, 0.65);
-            --glass-shadow: 0 20px 44px -12px rgba(15, 23, 42, 0.14), 0 4px 16px -4px rgba(15, 23, 42, 0.06);
+            --glass-specular: inset 0 1px 0 0 rgba(255, 255, 255, 0.95), inset 1px 0 0 0 rgba(255, 255, 255, 0.65);
+            --glass-shadow: 0 20px 46px -12px rgba(15, 23, 42, 0.14), 0 4px 16px -4px rgba(15, 23, 42, 0.06);
 
             --text-primary: #0f172a;
             --text-secondary: #475569;
             --text-muted: #64748b;
 
             --pill-bg: rgba(15, 23, 42, 0.08);
-            --pill-border: rgba(15, 23, 42, 0.10);
-            --input-bg: rgba(255, 255, 255, 0.75);
-            --track-bg: rgba(15, 23, 42, 0.12);
+            --pill-border: rgba(15, 23, 42, 0.12);
+            --input-bg: rgba(255, 255, 255, 0.80);
+            --track-bg: rgba(15, 23, 42, 0.13);
             --divider: rgba(15, 23, 42, 0.08);
-
-            --label-bg: rgba(255, 255, 255, 0.82);
-            --label-border: rgba(15, 23, 42, 0.10);
-            --label-shadow: 0 4px 12px rgba(15, 23, 42, 0.10);
-            --axis-label-shadow: 0 1px 6px rgba(255, 255, 255, 0.95);
         }
 
         * {
@@ -115,20 +109,52 @@
             font-variant-numeric: tabular-nums;
         }
 
-        /* Ambient Refractive Mesh Background behind the WebGL Canvas */
-        .ambient-mesh {
+        /* =====================================================================
+           SOFT AMBIENT REFRACTIVE LIGHT ORBS (BEHIND WEBGL CANVAS)
+           ===================================================================== */
+        .ambient-orbs {
             position: fixed;
             inset: 0;
             z-index: 0;
             pointer-events: none;
-            background:
-                radial-gradient(circle at 16% 18%, var(--bg-mesh-1) 0%, transparent 46%),
-                radial-gradient(circle at 84% 24%, var(--bg-mesh-2) 0%, transparent 44%),
-                radial-gradient(circle at 52% 88%, var(--bg-mesh-3) 0%, transparent 50%);
+            overflow: hidden;
+        }
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(85px);
             transition: background var(--transition-theme);
+            animation: floatOrb 18s ease-in-out infinite alternate;
+        }
+        .orb-1 {
+            width: 48vw;
+            height: 48vw;
+            top: -12%;
+            left: -8%;
+            background: var(--orb-1);
+        }
+        .orb-2 {
+            width: 42vw;
+            height: 42vw;
+            top: 10%;
+            right: -6%;
+            background: var(--orb-2);
+            animation-delay: -6s;
+        }
+        .orb-3 {
+            width: 46vw;
+            height: 46vw;
+            bottom: -16%;
+            left: 28%;
+            background: var(--orb-3);
+            animation-delay: -12s;
+        }
+        @keyframes floatOrb {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(3%, 4%) scale(1.06); }
         }
 
-        /* Full-Viewport WebGL Container */
+        /* Full-Viewport WebGL Canvas Container */
         #viewport {
             position: fixed;
             inset: 0;
@@ -147,44 +173,65 @@
         }
 
         /* =====================================================================
-           LIQUID GLASS SURFACE CLASSES
+           LIQUID GLASS PANELS, CARDS & BUTTONS
            ===================================================================== */
         .liquid-glass {
             background: var(--glass-bg);
-            backdrop-filter: blur(24px) saturate(185%);
-            -webkit-backdrop-filter: blur(24px) saturate(185%);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
             border: 1px solid var(--glass-border);
             box-shadow: var(--glass-specular), var(--glass-shadow);
             transition:
                 background var(--transition-theme),
                 border-color var(--transition-theme),
                 box-shadow var(--transition-theme),
-                transform 0.45s var(--ease-spring),
+                transform 0.48s var(--ease-spring),
                 opacity 0.35s var(--ease-spring);
         }
 
-        .glass-subcard {
+        .glass-card {
             background: var(--glass-card);
             border: 1px solid var(--glass-border-subtle);
-            transition: background 0.25s ease, border-color 0.25s ease;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+            transition: background 0.25s ease, border-color 0.25s ease, transform 0.35s var(--ease-spring);
         }
-        .glass-subcard:hover {
+        .glass-card:hover {
             background: var(--glass-card-hover);
+        }
+
+        /* Card Entrance Spring Animation */
+        @keyframes cardSlideIn {
+            0% {
+                opacity: 0;
+                transform: translateY(-10px) scale(0.97);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        .card-enter {
+            animation: cardSlideIn 0.38s var(--ease-spring) forwards;
         }
 
         .glass-btn {
             background: var(--glass-card);
             border: 1px solid var(--glass-border-subtle);
             color: var(--text-primary);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
             transition: all 0.28s var(--ease-spring);
         }
-        .glass-btn:hover {
+        .glass-btn:hover:not(:disabled) {
             background: var(--pill-bg);
             border-color: var(--pill-border);
             transform: translateY(-1px);
         }
-        .glass-btn:active {
+        .glass-btn:active:not(:disabled) {
             transform: scale(0.96);
+        }
+        .glass-btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
         }
         .glass-btn.active-state {
             background: rgba(56, 189, 248, 0.20);
@@ -197,63 +244,32 @@
             color: #0284c7;
         }
 
-        /* =====================================================================
-           FLOATING 3D PROJECTED HTML LABELS
-           ===================================================================== */
-        #labels-layer {
-            position: fixed;
-            inset: 0;
-            z-index: 2;
-            pointer-events: none;
-            overflow: hidden;
+        /* Primary Liquid Gradient Add Button */
+        .btn-add-primary {
+            background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 8px 20px -6px rgba(37, 99, 235, 0.55);
+            color: #ffffff;
+            transition: all 0.3s var(--ease-spring);
         }
-
-        .label-3d {
-            position: absolute;
-            transform: translate(-50%, -50%);
-            white-space: nowrap;
-            pointer-events: none;
-            will-change: left, top, opacity;
-            transition: opacity 0.2s ease, background-color var(--transition-theme), color var(--transition-theme), border-color var(--transition-theme);
+        .btn-add-primary:hover:not(:disabled) {
+            transform: translateY(-1px);
+            filter: brightness(1.08);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 10px 24px -6px rgba(37, 99, 235, 0.7);
         }
-
-        .label-pill {
-            padding: 3px 9px;
-            border-radius: 999px;
-            background: var(--label-bg);
-            border: 1px solid var(--label-border);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            box-shadow: var(--label-shadow);
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: -0.01em;
+        .btn-add-primary:active:not(:disabled) {
+            transform: scale(0.97);
         }
-
-        .label-angle {
-            padding: 2px 7px;
-            border-radius: 8px;
-            background: var(--label-bg);
-            border: 1px solid var(--label-border);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--text-primary);
-            box-shadow: var(--label-shadow);
-        }
-
-        .label-axis {
-            font-family: 'Inter', serif;
-            font-style: italic;
-            font-weight: 700;
-            font-size: 15px;
-            color: var(--text-primary);
-            text-shadow: var(--axis-label-shadow);
+        .btn-add-primary:disabled {
+            background: var(--glass-card);
+            border-color: var(--glass-border-subtle);
+            color: var(--text-muted);
+            box-shadow: none;
+            cursor: not-allowed;
         }
 
         /* =====================================================================
-           CUSTOM LIQUID RANGE SLIDERS & NUMERIC INPUTS
+           CUSTOM LIQUID SLIDERS & NUMERIC INPUTS
            ===================================================================== */
         input[type="range"].liquid-slider {
             -webkit-appearance: none;
@@ -266,7 +282,6 @@
             cursor: pointer;
             transition: background 0.25s ease;
         }
-
         input[type="range"].liquid-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
@@ -275,13 +290,13 @@
             border-radius: 50%;
             background: var(--slider-accent, #38bdf8);
             border: 2.5px solid #ffffff;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.32);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
             cursor: pointer;
             transition: transform 0.2s var(--ease-spring), box-shadow 0.2s ease;
         }
         input[type="range"].liquid-slider::-webkit-slider-thumb:hover {
             transform: scale(1.18);
-            box-shadow: 0 0 0 5px rgba(56, 189, 248, 0.18), 0 2px 10px rgba(0, 0, 0, 0.35);
+            box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.16), 0 2px 10px rgba(0, 0, 0, 0.4);
         }
         input[type="range"].liquid-slider::-moz-range-thumb {
             width: 16px;
@@ -289,7 +304,7 @@
             border-radius: 50%;
             background: var(--slider-accent, #38bdf8);
             border: 2.5px solid #ffffff;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.32);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
             cursor: pointer;
             transition: transform 0.2s var(--ease-spring);
         }
@@ -311,7 +326,6 @@
             border-color: #38bdf8;
             box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18);
         }
-        /* Hide number spinners */
         input[type="number"]::-webkit-inner-spin-button,
         input[type="number"]::-webkit-outer-spin-button {
             -webkit-appearance: none;
@@ -352,7 +366,7 @@
         }
 
         /* =====================================================================
-           INSPECTOR COLLAPSE ANIMATION & CUSTOM SCROLLBAR
+           INSPECTOR SIDEBAR & CUSTOM SCROLLBAR
            ===================================================================== */
         #inspector-panel {
             transition: transform 0.5s var(--ease-spring), opacity 0.4s var(--ease-spring);
@@ -375,7 +389,7 @@
         }
 
         /* =====================================================================
-           CAMERA DOCK SLIDING PILL INDICATOR
+           CAMERA DOCK SLIDING PILL & THEME ICON ANIMATION
            ===================================================================== */
         #dock-pill {
             position: absolute;
@@ -401,7 +415,6 @@
             font-weight: 600;
         }
 
-        /* Theme Icon Rotation Animation */
         .theme-icon {
             transition: transform 0.5s var(--ease-spring), opacity 0.3s ease;
         }
@@ -422,12 +435,70 @@
             transform: rotate(0deg) scale(1);
         }
 
-        /* Mobile Adjustments */
+        /* =====================================================================
+           SWAPPABLE AXIS SEGMENTED CONTROL & COMPONENT FLASH ANIMATION
+           ===================================================================== */
+        .axis-seg-container {
+            position: relative;
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            padding: 3px;
+            border-radius: 14px;
+            background: var(--input-bg);
+            border: 1px solid var(--glass-border-subtle);
+        }
+        #axis-seg-pill {
+            position: absolute;
+            top: 3px;
+            bottom: 3px;
+            left: 3px;
+            border-radius: 10px;
+            background: var(--pill-bg);
+            border: 1px solid var(--pill-border);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 2px 8px rgba(0, 0, 0, 0.14);
+            transition: transform 0.42s var(--ease-spring), width 0.42s var(--ease-spring);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .axis-seg-btn {
+            position: relative;
+            z-index: 1;
+            padding: 5px 2px;
+            font-size: 10.5px;
+            font-weight: 500;
+            line-height: 1.15;
+            text-align: center;
+            color: var(--text-secondary);
+            border-radius: 10px;
+            transition: color 0.25s ease;
+            cursor: pointer;
+        }
+        .axis-seg-btn.active {
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+
+        @keyframes compFlash {
+            0% {
+                background-color: rgba(56, 189, 248, 0.34);
+                border-color: rgba(56, 189, 248, 0.85);
+                transform: scale(1.04);
+            }
+            100% {
+                background-color: var(--input-bg);
+                border-color: var(--glass-border-subtle);
+                transform: scale(1);
+            }
+        }
+        .comp-flash {
+            animation: compFlash 0.65s var(--ease-spring);
+        }
+
         @media (max-width: 640px) {
             #inspector-panel {
                 width: calc(100vw - 24px) !important;
                 max-height: 70vh !important;
-                top: 76px !important;
+                top: 74px !important;
                 right: 12px !important;
             }
         }
@@ -435,21 +506,22 @@
 </head>
 <body>
 
-    <!-- Subtle Ambient Refractive Gradient Mesh -->
-    <div class="ambient-mesh" aria-hidden="true"></div>
+    <!-- Ambient Refractive Gradient Orbs -->
+    <div class="ambient-orbs" aria-hidden="true">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
 
-    <!-- Full-Viewport 3D WebGL Canvas -->
+    <!-- Full-Viewport Three.js WebGL Canvas -->
     <div id="viewport" role="application" aria-label="Interactive 3D Force Vector Scene"></div>
-
-    <!-- Floating 2D Projected 3D Labels -->
-    <div id="labels-layer" aria-hidden="true"></div>
 
     <!-- =====================================================================
          1. TOP FLOATING LIQUID GLASS HEADER BAR
          ===================================================================== -->
-    <header class="fixed top-3.5 left-3.5 right-3.5 sm:right-auto z-30 flex items-center justify-between sm:justify-start gap-2 sm:gap-3 liquid-glass rounded-2xl px-3 sm:px-4 py-2">
-        <!-- Brand Logo & Title -->
-        <div class="flex items-center gap-2.5 pr-1 sm:pr-2">
+    <header class="fixed top-3.5 left-3.5 right-3.5 sm:right-auto z-30 flex items-center justify-between sm:justify-start gap-2 sm:gap-2.5 liquid-glass rounded-2xl px-3 sm:px-4 py-2">
+        <!-- Brand Identity -->
+        <div class="flex items-center gap-2.5 pr-1">
             <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-br from-sky-400 via-blue-500 to-indigo-600 shadow-lg shadow-sky-500/25 shrink-0">
                 <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 3v9l7.5 4.3"/>
@@ -460,53 +532,61 @@
             </div>
             <div class="leading-tight">
                 <h1 class="text-sm sm:text-[15px] font-bold tracking-tight" style="color: var(--text-primary);">VectorLab 3D</h1>
-                <p class="text-[11px] font-medium hidden xs:block sm:block" style="color: var(--text-secondary);">3D Statics Force Visualizer</p>
+                <p class="text-[11px] font-medium hidden sm:block" style="color: var(--text-secondary);">Multi-Vector Statics Studio</p>
             </div>
         </div>
 
         <div class="h-6 w-px hidden sm:block" style="background: var(--divider);"></div>
 
-        <!-- Quick Action Buttons -->
-        <div class="flex items-center gap-1.5 sm:gap-2">
-            <!-- Reset Textbook Preset -->
-            <button id="btn-reset" onclick="resetTextbookDefaults()" title="Reset to Textbook Problem (750 N & 900 N)"
-                class="glass-btn px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
-                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-                    <path d="M3 3v5h5"/>
+        <!-- Global Toolbar Actions -->
+        <div class="flex items-center gap-1.5">
+            <!-- Load 2-Force Demo Preset -->
+            <button id="btn-demo" onclick="window.loadTwoForceDemo()" title="Load Pre-Built 2-Force Textbook Setup"
+                class="glass-btn px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
+                <svg class="w-3.5 h-3.5 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="5 3 19 12 5 21 5 3"/>
                 </svg>
-                <span class="hidden md:inline">Reset Textbook</span>
+                <span class="hidden md:inline">Load 2-Force Demo</span>
+            </button>
+
+            <!-- Clear All Vectors -->
+            <button id="btn-clear" onclick="window.clearAllVectors()" title="Remove All Vectors (Reset to 0 / 10)"
+                class="glass-btn px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
+                <svg class="w-3.5 h-3.5 text-rose-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 6h18"/>
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                </svg>
+                <span class="hidden md:inline">Clear All</span>
             </button>
 
             <!-- Auto-Orbit Toggle -->
-            <button id="btn-orbit" onclick="toggleAutoOrbit()" title="Toggle Gentle Auto-Orbit"
-                class="glass-btn px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
+            <button id="btn-orbit" onclick="window.toggleAutoOrbit()" title="Toggle Gentle Auto-Orbit"
+                class="glass-btn px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
                 <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="9" stroke-dasharray="4 3"/>
                     <path d="M12 3a9 9 0 0 1 9 9"/>
                     <circle cx="12" cy="12" r="2" fill="currentColor"/>
                 </svg>
-                <span class="hidden md:inline">Auto-Orbit</span>
+                <span class="hidden lg:inline">Auto-Orbit</span>
             </button>
 
-            <!-- Animated Light / Dark Mode Toggle -->
-            <button id="btn-theme" onclick="toggleTheme()" title="Switch Light / Dark Mode" aria-label="Toggle Light and Dark Mode"
+            <!-- Animated Light / Dark Mode Toggle Pill -->
+            <button id="btn-theme" onclick="window.toggleTheme()" title="Switch Light / Dark Mode" aria-label="Toggle Light and Dark Mode"
                 class="glass-btn relative w-9 h-8 rounded-xl flex items-center justify-center cursor-pointer overflow-hidden">
-                <!-- Sun Icon (shown in Dark Mode to switch to Light) -->
                 <svg class="theme-icon icon-sun w-4 h-4 text-amber-400 absolute" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="4"/>
                     <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
                 </svg>
-                <!-- Moon Icon (shown in Light Mode to switch to Dark) -->
                 <svg class="theme-icon icon-moon w-4 h-4 text-indigo-600 absolute" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
                 </svg>
             </button>
 
-            <!-- Inspector Panel Toggle Button -->
-            <button id="btn-toggle-inspector" onclick="toggleInspector()" title="Toggle Inspector Panel" aria-label="Toggle Inspector Panel"
-                class="glass-btn px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 cursor-pointer sm:ml-0.5">
-                <svg id="inspector-icon" class="w-4 h-4 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <!-- Inspector Drawer Toggle -->
+            <button id="btn-toggle-inspector" onclick="window.toggleInspector()" title="Toggle Vector Inspector" aria-label="Toggle Vector Inspector"
+                class="glass-btn px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="3" width="18" height="18" rx="3"/>
                     <path d="M15 3v18"/>
                 </svg>
@@ -515,46 +595,133 @@
         </div>
     </header>
 
-    <!-- Subtle Hint Badge (Bottom Left on Desktop) -->
-    <div class="fixed bottom-4 left-4 z-20 hidden lg:flex items-center gap-2 liquid-glass rounded-full px-3.5 py-1.5 text-[11px] font-medium pointer-events-none" style="color: var(--text-secondary);">
+    <!-- Subtle Bottom-Left Interaction Hint -->
+    <div class="fixed bottom-4 left-4 z-20 hidden xl:flex items-center gap-2 liquid-glass rounded-full px-3.5 py-1.5 text-[11px] font-medium pointer-events-none" style="color: var(--text-secondary);">
         <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
         <span>Drag to orbit • Scroll to zoom • Right-drag to pan</span>
     </div>
 
     <!-- =====================================================================
-         2. RIGHT-SIDE COLLAPSIBLE LIQUID GLASS INSPECTOR PANEL
+         2. RIGHT-SIDE COLLAPSIBLE LIQUID GLASS INSPECTOR SIDEBAR
          ===================================================================== -->
     <aside id="inspector-panel"
-        class="fixed top-4 right-4 z-30 w-[356px] max-h-[calc(100vh-32px)] liquid-glass rounded-3xl flex flex-col overflow-hidden">
+        class="fixed top-4 right-4 z-30 w-[372px] max-h-[calc(100vh-32px)] liquid-glass rounded-3xl flex flex-col overflow-hidden">
 
-        <!-- Inspector Header -->
+        <!-- Sidebar Top Header -->
         <div class="px-5 pt-4 pb-3 flex items-center justify-between shrink-0" style="border-bottom: 1px solid var(--divider);">
-            <div>
-                <h2 class="text-xs font-bold uppercase tracking-wider" style="color: var(--text-secondary);">Force Inspector</h2>
-                <p class="text-[11px] mt-0.5" style="color: var(--text-muted);">Live 3D Cartesian Decomposition</p>
+            <div class="flex items-center gap-2.5">
+                <div>
+                    <h2 class="text-xs font-bold uppercase tracking-wider" style="color: var(--text-secondary);">Force Vector Builder</h2>
+                    <p class="text-[11px] mt-0.5" style="color: var(--text-muted);">Add & analyze up to 10 3D forces</p>
+                </div>
             </div>
-            <button onclick="toggleInspector()" class="glass-btn w-7 h-7 rounded-full flex items-center justify-center cursor-pointer" title="Collapse Panel">
-                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 6 6 18M6 6l12 12"/>
-                </svg>
-            </button>
+            <div class="flex items-center gap-2">
+                <span id="header-count-badge" class="font-mono-num text-[11px] font-bold px-2.5 py-1 rounded-full" style="background: var(--pill-bg); border: 1px solid var(--pill-border); color: var(--text-primary);">
+                    0 / 10
+                </span>
+                <button onclick="window.toggleInspector()" class="glass-btn w-7 h-7 rounded-full flex items-center justify-center cursor-pointer" title="Collapse Inspector">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 6 6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
         </div>
 
-        <!-- Scrollable Content -->
+        <!-- Scrollable Content Area -->
         <div class="inspector-scroll overflow-y-auto px-4 py-3.5 space-y-3.5 flex-1">
 
-            <!-- Resultant Force Toggle Card -->
-            <div class="glass-subcard rounded-2xl p-3.5 relative overflow-hidden">
-                <div class="flex items-center justify-between gap-3">
-                    <div class="flex items-center gap-2.5">
-                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.7)] shrink-0"></span>
-                        <div>
-                            <div class="text-xs font-bold" style="color: var(--text-primary);">Resultant Force (F<sub>R</sub> = A + B)</div>
-                            <div class="text-[11px]" style="color: var(--text-secondary);">3D parallelogram & resultant vector</div>
-                        </div>
+            <!-- Axis Orientation & Pairwise Component Swap Card -->
+            <div class="glass-card rounded-2xl p-3.5 space-y-2.5">
+                <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-3.5 h-3.5 text-sky-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 3v18M3 12h18"/>
+                            <path d="m8 7 4-4 4 4M17 8l4 4-4 4"/>
+                        </svg>
+                        <h3 class="text-xs font-bold tracking-tight" style="color: var(--text-primary);">Axis Orientation &amp; Swap</h3>
+                    </div>
+                    <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-400 border border-sky-500/25">
+                        Right-Handed
+                    </span>
+                </div>
+
+                <!-- 4-Preset Segmented Liquid Glass Control -->
+                <div class="axis-seg-container" id="axis-segmented" role="group" aria-label="Coordinate Axis Orientation">
+                    <div id="axis-seg-pill"></div>
+                    <button type="button" class="axis-seg-btn active" data-axis="y-up" onclick="window.setAxisPreset('y-up', this)">
+                        Y-Up
+                    </button>
+                    <button type="button" class="axis-seg-btn" data-axis="z-up-statics" onclick="window.setAxisPreset('z-up-statics', this)">
+                        Z-Up<span class="block text-[9px] opacity-80">Statics</span>
+                    </button>
+                    <button type="button" class="axis-seg-btn" data-axis="z-up-cad" onclick="window.setAxisPreset('z-up-cad', this)">
+                        Z-Up<span class="block text-[9px] opacity-80">CAD</span>
+                    </button>
+                    <button type="button" class="axis-seg-btn" data-axis="x-up" onclick="window.setAxisPreset('x-up', this)">
+                        X-Up
+                    </button>
+                </div>
+
+                <!-- Live Coordinate Mapping Subtitle -->
+                <div id="axis-mapping-subtitle" class="text-[11px] font-medium text-center py-0.5" style="color: var(--text-secondary);">
+                    Vertical: +Y · Floor: XZ · Right-Handed
+                </div>
+
+                <!-- Pairwise Component Swap Buttons -->
+                <div class="grid grid-cols-3 gap-1.5 pt-0.5">
+                    <button type="button" onclick="window.swapAxes('x', 'y')" title="Transpose Fx and Fy across all vectors"
+                        class="glass-btn py-1.5 px-2 rounded-xl text-[11px] font-semibold text-center cursor-pointer">
+                        Swap X ↔ Y
+                    </button>
+                    <button type="button" onclick="window.swapAxes('y', 'z')" title="Transpose Fy and Fz across all vectors"
+                        class="glass-btn py-1.5 px-2 rounded-xl text-[11px] font-semibold text-center cursor-pointer">
+                        Swap Y ↔ Z
+                    </button>
+                    <button type="button" onclick="window.swapAxes('x', 'z')" title="Transpose Fx and Fz across all vectors"
+                        class="glass-btn py-1.5 px-2 rounded-xl text-[11px] font-semibold text-center cursor-pointer">
+                        Swap X ↔ Z
+                    </button>
+                </div>
+            </div>
+
+            <!-- Resultant Force Summary Card -->
+            <div class="glass-card rounded-2xl p-3.5 space-y-2.5">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.75)]"></span>
+                        <h3 class="text-xs font-bold tracking-tight" style="color: var(--text-primary);">Resultant Force (F<sub>R</sub> = ∑F<sub>i</sub>)</h3>
+                    </div>
+                    <span id="summary-active-pill" class="font-mono-num text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">
+                        0 / 10 Active
+                    </span>
+                </div>
+
+                <!-- Resultant Cartesian Vector Equation -->
+                <div class="rounded-xl px-3 py-2 text-[11px] font-mono-num flex items-center justify-between gap-2" style="background: var(--input-bg); border: 1px solid var(--glass-border-subtle);">
+                    <span class="font-bold text-emerald-400 shrink-0">F<sub>R</sub> =</span>
+                    <span id="res-equation" class="truncate text-right" style="color: var(--text-primary);">0.0i + 0.0j + 0.0k N</span>
+                </div>
+
+                <!-- Magnitude & Coordinate Direction Angles -->
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="rounded-xl p-2.5" style="background: var(--input-bg); border: 1px solid var(--glass-border-subtle);">
+                        <div class="text-[10px] font-medium" style="color: var(--text-secondary);">Magnitude |F<sub>R</sub>|</div>
+                        <div id="res-magnitude" class="font-mono-num text-sm font-bold text-emerald-400 mt-0.5">0.0 N</div>
+                    </div>
+                    <div class="rounded-xl p-2.5" style="background: var(--input-bg); border: 1px solid var(--glass-border-subtle);">
+                        <div class="text-[10px] font-medium" style="color: var(--text-secondary);">Direction (α, β, γ)</div>
+                        <div id="res-angles" class="font-mono-num text-[11px] font-semibold mt-1 leading-tight" style="color: var(--text-primary);">—</div>
+                    </div>
+                </div>
+
+                <!-- Toggle Switch: Show Resultant & Tip-to-Tail Chain -->
+                <div class="pt-1.5 flex items-center justify-between gap-3" style="border-top: 1px solid var(--divider);">
+                    <div>
+                        <div class="text-xs font-semibold" style="color: var(--text-primary);">Show Resultant & Tip-to-Tail Chain</div>
+                        <div class="text-[10px]" style="color: var(--text-secondary);">Emerald resultant arrow + 3D addition chain</div>
                     </div>
                     <label class="inline-flex items-center cursor-pointer">
-                        <input type="checkbox" id="toggle-resultant" class="sr-only" onchange="onToggleResultant(this.checked)">
+                        <input type="checkbox" id="toggle-resultant" checked class="sr-only" onchange="window.onToggleResultant(this.checked)">
                         <div class="switch-track" style="--switch-color: #10b981;">
                             <div class="switch-thumb"></div>
                         </div>
@@ -562,155 +729,38 @@
                 </div>
             </div>
 
-            <!-- Vector A Controls -->
-            <div class="glass-subcard rounded-2xl p-3.5 space-y-3">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.65)]"></span>
-                        <h3 class="text-xs font-bold tracking-tight" style="color: var(--text-primary);">Vector A</h3>
-                    </div>
-                    <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/25">From +y & +x</span>
-                </div>
-
-                <!-- Magnitude A -->
-                <div class="space-y-1">
-                    <div class="flex items-center justify-between text-[11px]">
-                        <span style="color: var(--text-secondary);">Magnitude |A| (N)</span>
-                        <input type="number" id="num-a-mag" class="glass-num font-mono-num" min="100" max="1500" step="10" value="750">
-                    </div>
-                    <input type="range" id="rng-a-mag" class="liquid-slider" style="--slider-accent: #f43f5e;" min="100" max="1500" step="5" value="750">
-                </div>
-
-                <!-- Vertical Angle theta_y -->
-                <div class="space-y-1">
-                    <div class="flex items-center justify-between text-[11px]">
-                        <span style="color: var(--text-secondary);">Vertical Angle θ<sub>y</sub> (from +y)</span>
-                        <div class="flex items-center gap-1">
-                            <input type="number" id="num-a-theta" class="glass-num font-mono-num" min="1" max="89" step="1" value="35">
-                            <span class="text-[11px]" style="color: var(--text-muted);">°</span>
-                        </div>
-                    </div>
-                    <input type="range" id="rng-a-theta" class="liquid-slider" style="--slider-accent: #f43f5e;" min="1" max="89" step="1" value="35">
-                </div>
-
-                <!-- Azimuth Angle phi_x -->
-                <div class="space-y-1">
-                    <div class="flex items-center justify-between text-[11px]">
-                        <span style="color: var(--text-secondary);">Azimuth φ<sub>x</sub> (+x toward +z)</span>
-                        <div class="flex items-center gap-1">
-                            <input type="number" id="num-a-phi" class="glass-num font-mono-num" min="-85" max="85" step="1" value="25">
-                            <span class="text-[11px]" style="color: var(--text-muted);">°</span>
-                        </div>
-                    </div>
-                    <input type="range" id="rng-a-phi" class="liquid-slider" style="--slider-accent: #f43f5e;" min="-85" max="85" step="1" value="25">
-                </div>
+            <!-- Prominent + Add Vector Button Bar -->
+            <div class="flex items-center gap-2">
+                <button id="btn-add-vector" onclick="window.addVector()"
+                    class="btn-add-primary flex-1 py-2.5 px-4 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer">
+                    <svg id="add-btn-icon" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                    <span id="add-btn-label">+ Add Vector</span>
+                    <span id="add-btn-badge" class="font-mono-num text-[11px] font-bold px-2 py-0.5 rounded-full bg-white/20 text-white">
+                        0 / 10
+                    </span>
+                </button>
             </div>
 
-            <!-- Vector B Controls -->
-            <div class="glass-subcard rounded-2xl p-3.5 space-y-3">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.65)]"></span>
-                        <h3 class="text-xs font-bold tracking-tight" style="color: var(--text-primary);">Vector B</h3>
-                    </div>
-                    <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-orange-500/15 text-orange-400 border border-orange-500/25">Above xz & +z</span>
-                </div>
+            <!-- Dynamic Collapsible Vector Cards List -->
+            <div id="vectors-list" class="space-y-3"></div>
 
-                <!-- Magnitude B -->
-                <div class="space-y-1">
-                    <div class="flex items-center justify-between text-[11px]">
-                        <span style="color: var(--text-secondary);">Magnitude |B| (N)</span>
-                        <input type="number" id="num-b-mag" class="glass-num font-mono-num" min="100" max="1500" step="10" value="900">
-                    </div>
-                    <input type="range" id="rng-b-mag" class="liquid-slider" style="--slider-accent: #f97316;" min="100" max="1500" step="5" value="900">
-                </div>
-
-                <!-- Elevation Angle above xz -->
-                <div class="space-y-1">
-                    <div class="flex items-center justify-between text-[11px]">
-                        <span style="color: var(--text-secondary);">Elevation θ<sub>xz</sub> (above xz)</span>
-                        <div class="flex items-center gap-1">
-                            <input type="number" id="num-b-elev" class="glass-num font-mono-num" min="1" max="89" step="1" value="65">
-                            <span class="text-[11px]" style="color: var(--text-muted);">°</span>
-                        </div>
-                    </div>
-                    <input type="range" id="rng-b-elev" class="liquid-slider" style="--slider-accent: #f97316;" min="1" max="89" step="1" value="65">
-                </div>
-
-                <!-- Horizontal Angle from +z toward -x -->
-                <div class="space-y-1">
-                    <div class="flex items-center justify-between text-[11px]">
-                        <span style="color: var(--text-secondary);">Azimuth φ<sub>z</sub> (+z toward −x)</span>
-                        <div class="flex items-center gap-1">
-                            <input type="number" id="num-b-phi" class="glass-num font-mono-num" min="-85" max="85" step="1" value="20">
-                            <span class="text-[11px]" style="color: var(--text-muted);">°</span>
-                        </div>
-                    </div>
-                    <input type="range" id="rng-b-phi" class="liquid-slider" style="--slider-accent: #f97316;" min="-85" max="85" step="1" value="20">
-                </div>
-            </div>
-
-            <!-- Live Mathematical Breakdown Card -->
-            <div class="glass-subcard rounded-2xl p-3.5 space-y-2.5">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-xs font-bold tracking-tight" style="color: var(--text-primary);">Cartesian Breakdown</h3>
-                    <span class="text-[10px] font-mono-num font-medium" style="color: var(--text-muted);">Newtons (N)</span>
-                </div>
-
-                <!-- Vector A Components -->
-                <div class="rounded-xl p-2.5 text-[11px] font-mono-num leading-relaxed" style="background: var(--input-bg); border: 1px solid var(--glass-border-subtle);">
-                    <div class="flex items-center justify-between mb-0.5">
-                        <span class="font-bold text-rose-400">A</span>
-                        <span id="math-a-vec" style="color: var(--text-primary);">389.9i + 614.4j + 181.8k</span>
-                    </div>
-                    <div class="flex items-center justify-between mb-1.5">
-                        <span class="font-bold text-orange-400">B</span>
-                        <span id="math-b-vec" style="color: var(--text-primary);">-130.1i + 815.7j + 357.4k</span>
-                    </div>
-                    <div class="pt-1.5 flex items-center justify-between" style="border-top: 1px dashed var(--divider);">
-                        <span class="font-bold text-emerald-400">F<sub>R</sub></span>
-                        <span id="math-r-vec" class="font-semibold text-emerald-400">259.8i + 1430.0j + 539.2k</span>
-                    </div>
-                </div>
-
-                <!-- Resultant Magnitude & Coordinate Direction Angles -->
-                <div class="grid grid-cols-2 gap-2">
-                    <div class="rounded-xl p-2.5" style="background: var(--input-bg); border: 1px solid var(--glass-border-subtle);">
-                        <div class="text-[10px] font-medium" style="color: var(--text-secondary);">Magnitude |F<sub>R</sub>|</div>
-                        <div id="math-r-mag" class="font-mono-num text-sm font-bold text-emerald-400 mt-0.5">1550.2 N</div>
-                    </div>
-                    <div class="rounded-xl p-2.5" style="background: var(--input-bg); border: 1px solid var(--glass-border-subtle);">
-                        <div class="text-[10px] font-medium" style="color: var(--text-secondary);">Direction Angles</div>
-                        <div id="math-r-angles" class="font-mono-num text-[11px] font-semibold mt-1 leading-tight" style="color: var(--text-primary);">
-                            α 80.4° • β 22.7° • γ 69.7°
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Visual Display Toggles -->
-            <div class="glass-subcard rounded-2xl p-3.5 space-y-2.5">
-                <h3 class="text-xs font-bold tracking-tight" style="color: var(--text-primary);">Display Layers</h3>
+            <!-- Visual Display Layers Card -->
+            <div class="glass-card rounded-2xl p-3.5 space-y-2.5">
+                <h3 class="text-xs font-bold tracking-tight" style="color: var(--text-primary);">3D Scene Layers</h3>
 
                 <label class="flex items-center justify-between cursor-pointer text-xs">
-                    <span style="color: var(--text-secondary);">Vertical Projection Planes</span>
-                    <input type="checkbox" id="toggle-planes" checked class="sr-only" onchange="onToggleDisplay()">
+                    <span style="color: var(--text-secondary);">Vertical Projection Triangles</span>
+                    <input type="checkbox" id="toggle-planes" checked class="sr-only" onchange="window.onToggleDisplay()">
                     <div class="switch-track" style="--switch-color: #38bdf8;">
                         <div class="switch-thumb"></div>
                     </div>
                 </label>
 
                 <label class="flex items-center justify-between cursor-pointer text-xs">
-                    <span style="color: var(--text-secondary);">Angle Arcs & Labels</span>
-                    <input type="checkbox" id="toggle-arcs" checked class="sr-only" onchange="onToggleDisplay()">
-                    <div class="switch-track" style="--switch-color: #38bdf8;">
-                        <div class="switch-thumb"></div>
-                    </div>
-                </label>
-
-                <label class="flex items-center justify-between cursor-pointer text-xs">
-                    <span style="color: var(--text-secondary);">Coordinate Grid (XZ)</span>
-                    <input type="checkbox" id="toggle-grid" checked class="sr-only" onchange="onToggleDisplay()">
+                    <span style="color: var(--text-secondary);">XZ Ground Coordinate Grid</span>
+                    <input type="checkbox" id="toggle-grid" checked class="sr-only" onchange="window.onToggleDisplay()">
                     <div class="switch-track" style="--switch-color: #38bdf8;">
                         <div class="switch-thumb"></div>
                     </div>
@@ -725,880 +775,1415 @@
     <nav id="camera-dock" aria-label="Camera Presets"
         class="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 liquid-glass rounded-full p-1.5 flex items-center gap-0.5 sm:gap-1 max-w-[94vw]">
         <div id="dock-pill"></div>
-        <button class="dock-btn active px-3 sm:px-4 py-1.5 rounded-full text-[11px] sm:text-xs cursor-pointer whitespace-nowrap" data-preset="textbook" onclick="setCameraPreset('textbook', this)">
-            Textbook View
+        <button id="dock-btn-isometric" class="dock-btn active px-3 sm:px-4 py-1.5 rounded-full text-[11px] sm:text-xs cursor-pointer whitespace-nowrap" data-preset="isometric" onclick="window.setCameraPreset('isometric', this)">
+            3D Iso
         </button>
-        <button class="dock-btn px-3 sm:px-4 py-1.5 rounded-full text-[11px] sm:text-xs cursor-pointer whitespace-nowrap" data-preset="top" onclick="setCameraPreset('top', this)">
+        <button id="dock-btn-top" class="dock-btn px-3 sm:px-4 py-1.5 rounded-full text-[11px] sm:text-xs cursor-pointer whitespace-nowrap" data-preset="top" onclick="window.setCameraPreset('top', this)">
             Top (XZ)
         </button>
-        <button class="dock-btn px-3 sm:px-4 py-1.5 rounded-full text-[11px] sm:text-xs cursor-pointer whitespace-nowrap" data-preset="front" onclick="setCameraPreset('front', this)">
+        <button id="dock-btn-front" class="dock-btn px-3 sm:px-4 py-1.5 rounded-full text-[11px] sm:text-xs cursor-pointer whitespace-nowrap" data-preset="front" onclick="window.setCameraPreset('front', this)">
             Front (XY)
         </button>
-        <button class="dock-btn px-3 sm:px-4 py-1.5 rounded-full text-[11px] sm:text-xs cursor-pointer whitespace-nowrap" data-preset="side" onclick="setCameraPreset('side', this)">
+        <button id="dock-btn-side" class="dock-btn px-3 sm:px-4 py-1.5 rounded-full text-[11px] sm:text-xs cursor-pointer whitespace-nowrap" data-preset="side" onclick="window.setCameraPreset('side', this)">
             Side (YZ)
         </button>
     </nav>
 
     <!-- =====================================================================
-         THREE.JS ENGINE & APPLICATION LOGIC
+         THREE.JS ES MODULE ENGINE & MULTI-VECTOR APPLICATION LOGIC
          ===================================================================== -->
-    <script>
-        (function () {
-            'use strict';
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-            // -----------------------------------------------------------------
-            // CONSTANTS & APPLICATION STATE
-            // -----------------------------------------------------------------
-            const SCALE = 0.01; // 100 N = 1.0 Three.js unit
-            const DEG2RAD = Math.PI / 180;
-            const RAD2DEG = 180 / Math.PI;
+        // ---------------------------------------------------------------------
+        // CONSTANTS, 10-COLOR PALETTE & RIGHT-HANDED AXIS ORIENTATION PRESETS
+        // ---------------------------------------------------------------------
+        const MAX_VECTORS = 10;
+        const SCALE = 0.01; // 1 Three.js unit = 100 N
+        const DEG2RAD = Math.PI / 180;
+        const RAD2DEG = 180 / Math.PI;
 
-            const TEXTBOOK_DEFAULTS = {
-                aMag: 750, aTheta: 35, aPhi: 25,
-                bMag: 900, bElev: 65, bPhi: 20
-            };
-
-            const state = {
-                ...TEXTBOOK_DEFAULTS,
-                showResultant: false,
-                showPlanes: true,
-                showArcs: true,
-                showGrid: true,
-                autoOrbit: false,
-                theme: 'dark',
-                inspectorOpen: window.innerWidth >= 900
-            };
-
-            // 3D Scene Core
-            let scene, camera, renderer, controls;
-            let ambientLight, keyLight, rimLight;
-            let gridHelper = null;
-            let axisObjects = [];
-            let planeMeshes = [];
-
-            // Smoothly Interpolated Vector Targets & Current Values (in scene units)
-            const targetA = new THREE.Vector3();
-            const targetB = new THREE.Vector3();
-            const currentA = new THREE.Vector3();
-            const currentB = new THREE.Vector3();
-            const currentR = new THREE.Vector3();
-
-            // Smooth Resultant Growth Animation (0 = hidden, 1 = full length)
-            let resultantProgress = 0;
-
-            // Camera Preset Smooth Cubic Interpolation
-            const camAnim = {
-                active: false,
-                startTime: 0,
-                duration: 850,
-                startPos: new THREE.Vector3(),
-                endPos: new THREE.Vector3(),
-                startTarget: new THREE.Vector3(),
-                endTarget: new THREE.Vector3()
-            };
-
-            // Dynamic 3D Visual Groups & Reusable Handles
-            let arrowA, arrowB, arrowR;
-            let planesGroup, arcsGroup, resultantGroup;
-            let planeAObj, planeBObj;
-            let arc35Obj, arc25Obj, arc65Obj, arc20Obj;
-            let paraLine1, paraLine2;
-
-            // Floating HTML Labels Registry
-            const labelsLayer = document.getElementById('labels-layer');
-            const labelMap = {};
-
-            // -----------------------------------------------------------------
-            // VECTOR PHYSICS CALCULATIONS (EXACT ENGINEERING STATICS)
-            // -----------------------------------------------------------------
-            function computeVectorA(mag, thetaYDeg, phiXDeg) {
-                const ty = thetaYDeg * DEG2RAD;
-                const px = phiXDeg * DEG2RAD;
-                const fy = mag * Math.cos(ty);
-                const fxz = mag * Math.sin(ty);
-                const fx = fxz * Math.cos(px);
-                const fz = fxz * Math.sin(px);
-                return { x: fx, y: fy, z: fz };
-            }
-
-            function computeVectorB(mag, elevDeg, phiZDeg) {
-                const el = elevDeg * DEG2RAD;
-                const pz = phiZDeg * DEG2RAD;
-                const fy = mag * Math.sin(el);
-                const fxz = mag * Math.cos(el);
-                const fx = -fxz * Math.sin(pz);
-                const fz = fxz * Math.cos(pz);
-                return { x: fx, y: fy, z: fz };
-            }
-
-            function updateMathAndTargets(instant = false) {
-                const aN = computeVectorA(state.aMag, state.aTheta, state.aPhi);
-                const bN = computeVectorB(state.bMag, state.bElev, state.bPhi);
-                const rN = { x: aN.x + bN.x, y: aN.y + bN.y, z: aN.z + bN.z };
-
-                // Set Three.js scene targets (scaled 100 N -> 1 unit)
-                targetA.set(aN.x * SCALE, aN.y * SCALE, aN.z * SCALE);
-                targetB.set(bN.x * SCALE, bN.y * SCALE, bN.z * SCALE);
-
-                if (instant) {
-                    currentA.copy(targetA);
-                    currentB.copy(targetB);
+        // Every preset maps physical (+X, +Y, +Z) onto right-handed Three.js world basis
+        // where Three.js world +Y = (0,1,0) is always vertical upward and XZ (y=0) is the floor.
+        const AXIS_PRESETS = {
+            'y-up': {
+                name: 'Y-Up',
+                subtitle: 'Vertical: +Y · Floor: XZ · Right-Handed',
+                upAxis: 'y',
+                horiz1: 'x',
+                horiz2: 'z',
+                upLabel: 'Y',
+                floorLabel: 'XZ',
+                h1Label: 'X',
+                h2Label: 'Z',
+                basis: {
+                    x: new THREE.Vector3(1, 0, 0),
+                    y: new THREE.Vector3(0, 1, 0),
+                    z: new THREE.Vector3(0, 0, 1)
+                },
+                dockLabels: {
+                    isometric: '3D Iso',
+                    top: 'Top (XZ)',
+                    front: 'Front (XY)',
+                    side: 'Side (YZ)'
                 }
+            },
+            'z-up-statics': {
+                name: 'Z-Up (Statics)',
+                subtitle: 'Vertical: +Z · Floor: XY (+X out, +Y right) · Right-Handed',
+                upAxis: 'z',
+                horiz1: 'x',
+                horiz2: 'y',
+                upLabel: 'Z',
+                floorLabel: 'XY',
+                h1Label: 'X',
+                h2Label: 'Y',
+                basis: {
+                    x: new THREE.Vector3(0, 0, 1),
+                    y: new THREE.Vector3(1, 0, 0),
+                    z: new THREE.Vector3(0, 1, 0)
+                },
+                dockLabels: {
+                    isometric: '3D Iso',
+                    top: 'Top (XY)',
+                    front: 'Front (YZ)',
+                    side: 'Side (XZ)'
+                }
+            },
+            'z-up-cad': {
+                name: 'Z-Up (CAD)',
+                subtitle: 'Vertical: +Z · Floor: XY (+X right, +Y in) · Right-Handed',
+                upAxis: 'z',
+                horiz1: 'x',
+                horiz2: 'y',
+                upLabel: 'Z',
+                floorLabel: 'XY',
+                h1Label: 'X',
+                h2Label: 'Y',
+                basis: {
+                    x: new THREE.Vector3(1, 0, 0),
+                    y: new THREE.Vector3(0, 0, -1),
+                    z: new THREE.Vector3(0, 1, 0)
+                },
+                dockLabels: {
+                    isometric: '3D Iso',
+                    top: 'Top (XY)',
+                    front: 'Front (XZ)',
+                    side: 'Side (YZ)'
+                }
+            },
+            'x-up': {
+                name: 'X-Up',
+                subtitle: 'Vertical: +X · Floor: YZ (+Y right, +Z in) · Right-Handed',
+                upAxis: 'x',
+                horiz1: 'y',
+                horiz2: 'z',
+                upLabel: 'X',
+                floorLabel: 'YZ',
+                h1Label: 'Y',
+                h2Label: 'Z',
+                basis: {
+                    x: new THREE.Vector3(0, 1, 0),
+                    y: new THREE.Vector3(1, 0, 0),
+                    z: new THREE.Vector3(0, 0, -1)
+                },
+                dockLabels: {
+                    isometric: '3D Iso',
+                    top: 'Top (YZ)',
+                    front: 'Front (XY)',
+                    side: 'Side (XZ)'
+                }
+            }
+        };
 
-                // Resultant Magnitude & Coordinate Direction Angles
-                const rMag = Math.hypot(rN.x, rN.y, rN.z);
-                const alpha = rMag > 0.001 ? Math.acos(THREE.MathUtils.clamp(rN.x / rMag, -1, 1)) * RAD2DEG : 0;
-                const beta  = rMag > 0.001 ? Math.acos(THREE.MathUtils.clamp(rN.y / rMag, -1, 1)) * RAD2DEG : 0;
-                const gamma = rMag > 0.001 ? Math.acos(THREE.MathUtils.clamp(rN.z / rMag, -1, 1)) * RAD2DEG : 0;
+        const VECTOR_PALETTE = [
+            { name: 'Crimson Rose',   hex: '#f43f5e', num: 0xf43f5e },
+            { name: 'Electric Blue',  hex: '#3b82f6', num: 0x3b82f6 },
+            { name: 'Amber Gold',     hex: '#f59e0b', num: 0xf59e0b },
+            { name: 'Violet Purple',  hex: '#8b5cf6', num: 0x8b5cf6 },
+            { name: 'Cyan Teal',      hex: '#06b6d4', num: 0x06b6d4 },
+            { name: 'Coral Orange',   hex: '#f97316', num: 0xf97316 },
+            { name: 'Magenta Pink',   hex: '#ec4899', num: 0xec4899 },
+            { name: 'Indigo',         hex: '#6366f1', num: 0x6366f1 },
+            { name: 'Lime',           hex: '#84cc16', num: 0x84cc16 },
+            { name: 'Sky Azure',      hex: '#0ea5e9', num: 0x0ea5e9 }
+        ];
 
-                // Format Cartesian i, j, k strings cleanly
-                const fmt = (x, y, z) => {
-                    const sx = x.toFixed(1);
-                    const sy = (y >= 0 ? '+ ' : '− ') + Math.abs(y).toFixed(1);
-                    const sz = (z >= 0 ? '+ ' : '− ') + Math.abs(z).toFixed(1);
-                    return `${sx}i ${sy}j ${sz}k`;
-                };
+        // ---------------------------------------------------------------------
+        // APPLICATION STATE (STARTS COMPLETELY BLANK: 0 VECTORS)
+        // ---------------------------------------------------------------------
+        const state = {
+            vectors: [], // Each item: { id, slot, label, color, mag, elev, azim, collapsed, components, targetSceneVec, currentSceneVec, growth, meshBundle }
+            axisPreset: 'y-up',
+            activeCameraPreset: 'isometric',
+            showResultant: true,
+            showPlanes: true,
+            showGrid: true,
+            autoOrbit: false,
+            theme: 'dark',
+            inspectorOpen: window.innerWidth >= 860
+        };
 
-                document.getElementById('math-a-vec').textContent = fmt(aN.x, aN.y, aN.z);
-                document.getElementById('math-b-vec').textContent = fmt(bN.x, bN.y, bN.z);
-                document.getElementById('math-r-vec').textContent = fmt(rN.x, rN.y, rN.z);
-                document.getElementById('math-r-mag').textContent = `${rMag.toFixed(1)} N`;
-                document.getElementById('math-r-angles').textContent =
-                    `α ${alpha.toFixed(1)}° • β ${beta.toFixed(1)}° • γ ${gamma.toFixed(1)}°`;
+        // ---------------------------------------------------------------------
+        // THREE.JS SCENE GLOBALS
+        // ---------------------------------------------------------------------
+        let scene, camera, renderer, controls;
+        let ambientLight, keyLight, rimLight;
+        let gridHelper = null;
+        let axisGroup, axisSprites = [], axisMaterials = [];
+        let axisRods = {};
+        let axisLabelMap = {};
+        const currentAxisBasis = {
+            x: new THREE.Vector3(1, 0, 0),
+            y: new THREE.Vector3(0, 1, 0),
+            z: new THREE.Vector3(0, 0, 1)
+        };
+        let vectorsGroup, resultantGroup;
 
-                // Update dynamic 3D label text
-                if (labelMap.vecA) labelMap.vecA.el.textContent = `A = ${Math.round(state.aMag)} N`;
-                if (labelMap.vecB) labelMap.vecB.el.textContent = `B = ${Math.round(state.bMag)} N`;
-                if (labelMap.vecR) labelMap.vecR.el.textContent = `F_R = ${rMag.toFixed(1)} N`;
-                if (labelMap.ang35) labelMap.ang35.el.textContent = `${Math.round(state.aTheta)}°`;
-                if (labelMap.ang25) labelMap.ang25.el.textContent = `${Math.abs(Math.round(state.aPhi))}°`;
-                if (labelMap.ang65) labelMap.ang65.el.textContent = `${Math.round(state.bElev)}°`;
-                if (labelMap.ang20) labelMap.ang20.el.textContent = `${Math.abs(Math.round(state.bPhi))}°`;
+        // Resultant 3D Visuals
+        let resultantArrow = null;
+        let resultantSpriteObj = null;
+        let chainLinesGroup = null;
+        let chainNodesGroup = null;
+        const currentResultantVec = new THREE.Vector3();
+        let resultantGrowth = 0;
+
+        // Smooth Camera Preset Flight State
+        const CAMERA_PRESETS = {
+            isometric: { pos: new THREE.Vector3(14.0, 11.0, 16.0), target: new THREE.Vector3(0.0, 2.5, 0.0) },
+            top:       { pos: new THREE.Vector3(0.0, 26.0, 0.05),  target: new THREE.Vector3(0.0, 0.0, 0.0) },
+            front:     { pos: new THREE.Vector3(0.0, 3.0, 25.0),   target: new THREE.Vector3(0.0, 3.0, 0.0) },
+            side:      { pos: new THREE.Vector3(25.0, 3.0, 0.0),   target: new THREE.Vector3(0.0, 3.0, 0.0) }
+        };
+
+        const camAnim = {
+            active: false,
+            startTime: 0,
+            duration: 850,
+            startPos: new THREE.Vector3(),
+            endPos: new THREE.Vector3(),
+            startTarget: new THREE.Vector3(),
+            endTarget: new THREE.Vector3()
+        };
+
+        // ---------------------------------------------------------------------
+        // CARTESIAN <-> SPHERICAL VECTOR TRIGONOMETRY (AXIS-PRESET AWARE)
+        // ---------------------------------------------------------------------
+        function getActiveAxisConfig(presetKey = state.axisPreset) {
+            return AXIS_PRESETS[presetKey] || AXIS_PRESETS['y-up'];
+        }
+
+        function computeCartesian(mag, elevDeg, azimDeg, presetKey = state.axisPreset) {
+            const sys = getActiveAxisConfig(presetKey);
+            const el = elevDeg * DEG2RAD;
+            const az = azimDeg * DEG2RAD;
+
+            const fUp = mag * Math.sin(el);
+            const fHoriz = mag * Math.cos(el);
+            const fH1 = fHoriz * Math.cos(az);
+            const fH2 = fHoriz * Math.sin(az);
+
+            return {
+                [sys.upAxis]: fUp,
+                [sys.horiz1]: fH1,
+                [sys.horiz2]: fH2
+            };
+        }
+
+        function cartesianToSpherical(comp, presetKey = state.axisPreset, fallbackAzim = 0) {
+            const sys = getActiveAxisConfig(presetKey);
+            const fUp = comp[sys.upAxis] || 0;
+            const fH1 = comp[sys.horiz1] || 0;
+            const fH2 = comp[sys.horiz2] || 0;
+
+            const fHoriz = Math.hypot(fH1, fH2);
+            const mag = Math.hypot(fUp, fHoriz);
+
+            if (mag < 1e-6) {
+                return { mag: 0, elev: 0, azim: fallbackAzim };
             }
 
-            // -----------------------------------------------------------------
-            // REUSABLE 3D ARROW BUILDER (SMOOTH ZERO-ALLOCATION UPDATES)
-            // -----------------------------------------------------------------
-            function createDynamicArrow(colorHex, shaftRadius, headLength, headRadius, parent) {
-                const group = new THREE.Group();
-                const mat = new THREE.MeshPhysicalMaterial({
-                    color: colorHex,
-                    roughness: 0.25,
-                    metalness: 0.15,
-                    clearcoat: 0.55,
-                    clearcoatRoughness: 0.2
-                });
+            const rawElev = Math.atan2(fUp, fHoriz) * RAD2DEG;
+            const elev = Math.round(THREE.MathUtils.clamp(rawElev, -90, 90) * 10) / 10;
 
-                // Unit-length cylinder along +Y (scaled dynamically per frame)
-                const shaftGeo = new THREE.CylinderGeometry(shaftRadius, shaftRadius, 1, 24);
-                shaftGeo.translate(0, 0.5, 0);
-                const shaft = new THREE.Mesh(shaftGeo, mat);
+            let azim = fallbackAzim;
+            if (fHoriz > 1e-5) {
+                const rawAzim = ((Math.atan2(fH2, fH1) * RAD2DEG) + 360) % 360;
+                azim = Math.round(rawAzim * 10) / 10;
+                if (azim >= 360) azim = 0;
+            }
 
-                const headGeo = new THREE.ConeGeometry(headRadius, headLength, 28);
-                headGeo.translate(0, headLength * 0.5, 0);
-                const head = new THREE.Mesh(headGeo, mat);
+            return {
+                mag: Math.round(mag * 10) / 10,
+                elev,
+                azim
+            };
+        }
 
-                group.add(shaft, head);
-                parent.add(group);
+        function physToSceneVec(comp, presetKey = state.axisPreset, targetVec = new THREE.Vector3()) {
+            const sys = getActiveAxisConfig(presetKey);
+            targetVec.set(0, 0, 0)
+                .addScaledVector(sys.basis.x, comp.x * SCALE)
+                .addScaledVector(sys.basis.y, comp.y * SCALE)
+                .addScaledVector(sys.basis.z, comp.z * SCALE);
+            return targetVec;
+        }
 
-                const upAxis = new THREE.Vector3(0, 1, 0);
-                const dir = new THREE.Vector3();
+        // ---------------------------------------------------------------------
+        // HIGH-DPI CANVAS-TEXTURE SPRITE GENERATOR (LIGHT/DARK THEME AWARE)
+        // ---------------------------------------------------------------------
+        function createTextSprite(text, options = {}) {
+            const {
+                accentHex = '#38bdf8',
+                isAxis = false,
+                isDark = state.theme === 'dark'
+            } = options;
 
-                return {
-                    group,
-                    material: mat,
-                    update(tipVec, scaleFactor = 1) {
-                        const len = tipVec.length() * scaleFactor;
-                        if (len < 0.02) {
-                            group.visible = false;
-                            return;
-                        }
-                        group.visible = true;
-                        dir.copy(tipVec).normalize();
-                        group.quaternion.setFromUnitVectors(upAxis, dir);
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
 
-                        const effHeadLen = Math.min(headLength, len * 0.45);
-                        const headScale = effHeadLen / headLength;
-                        const shaftLen = Math.max(0.001, len - effHeadLen);
+            if (isAxis) {
+                canvas.width = 192;
+                canvas.height = 192;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                        shaft.scale.set(1, shaftLen, 1);
-                        head.scale.set(headScale, headScale, headScale);
-                        head.position.set(0, shaftLen, 0);
+                // Subtle circular halo pill for crisp contrast
+                ctx.beginPath();
+                ctx.arc(96, 96, 56, 0, Math.PI * 2);
+                ctx.fillStyle = isDark ? 'rgba(10, 15, 28, 0.72)' : 'rgba(255, 255, 255, 0.85)';
+                ctx.fill();
+                ctx.lineWidth = 4;
+                ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(15, 23, 42, 0.12)';
+                ctx.stroke();
+
+                ctx.font = 'italic 700 62px Inter, Georgia, serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = isDark ? '#f8fafc' : '#0f172a';
+                ctx.fillText(text, 96, 100);
+            } else {
+                canvas.width = 512;
+                canvas.height = 128;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                ctx.font = '700 44px "JetBrains Mono", Inter, monospace';
+                const metrics = ctx.measureText(text);
+                const textW = Math.min(440, Math.max(180, metrics.width + 76));
+                const pillH = 78;
+                const x = (canvas.width - textW) / 2;
+                const y = (canvas.height - pillH) / 2;
+                const r = pillH / 2;
+
+                // Rounded Glass Pill Background
+                ctx.beginPath();
+                ctx.roundRect(x, y, textW, pillH, r);
+                ctx.fillStyle = isDark ? 'rgba(9, 14, 26, 0.84)' : 'rgba(255, 255, 255, 0.90)';
+                ctx.fill();
+
+                ctx.lineWidth = 4;
+                ctx.strokeStyle = accentHex;
+                ctx.stroke();
+
+                // Color Dot inside Pill
+                ctx.beginPath();
+                ctx.arc(x + 34, canvas.height / 2, 11, 0, Math.PI * 2);
+                ctx.fillStyle = accentHex;
+                ctx.fill();
+
+                // Label Text
+                ctx.fillStyle = isDark ? '#f8fafc' : '#0f172a';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(text, x + 58, canvas.height / 2 + 2);
+            }
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.colorSpace = THREE.SRGBColorSpace;
+            texture.needsUpdate = true;
+
+            const material = new THREE.SpriteMaterial({
+                map: texture,
+                transparent: true,
+                depthTest: false,
+                depthWrite: false
+            });
+
+            const sprite = new THREE.Sprite(material);
+            sprite.renderOrder = 20;
+            if (isAxis) {
+                sprite.scale.set(1.35, 1.35, 1);
+            } else {
+                sprite.scale.set(4.2, 1.05, 1);
+            }
+
+            return {
+                sprite,
+                texture,
+                material,
+                text,
+                accentHex,
+                isAxis,
+                redraw(newText, darkFlag) {
+                    this.text = newText;
+                    const newObj = createTextSprite(newText, {
+                        accentHex: this.accentHex,
+                        isAxis: this.isAxis,
+                        isDark: darkFlag
+                    });
+                    this.texture.dispose();
+                    this.material.map = newObj.texture;
+                    this.material.needsUpdate = true;
+                    this.texture = newObj.texture;
+                    newObj.material.dispose();
+                },
+                dispose() {
+                    this.texture.dispose();
+                    this.material.dispose();
+                }
+            };
+        }
+
+        // ---------------------------------------------------------------------
+        // DYNAMIC 3D ARROW MESH (SHAFT + CONE HEAD)
+        // ---------------------------------------------------------------------
+        function createArrowMesh(colorNum, shaftRadius, headLen, headRadius, parent) {
+            const group = new THREE.Group();
+            const mat = new THREE.MeshPhysicalMaterial({
+                color: colorNum,
+                roughness: 0.25,
+                metalness: 0.15,
+                clearcoat: 0.55,
+                clearcoatRoughness: 0.2
+            });
+
+            const shaftGeo = new THREE.CylinderGeometry(shaftRadius, shaftRadius, 1, 24);
+            shaftGeo.translate(0, 0.5, 0);
+            const shaft = new THREE.Mesh(shaftGeo, mat);
+
+            const headGeo = new THREE.ConeGeometry(headRadius, headLen, 28);
+            headGeo.translate(0, headLen * 0.5, 0);
+            const head = new THREE.Mesh(headGeo, mat);
+
+            group.add(shaft, head);
+            parent.add(group);
+
+            const upVec = new THREE.Vector3(0, 1, 0);
+            const dirVec = new THREE.Vector3();
+
+            return {
+                group,
+                update(tipVec, scaleMult = 1) {
+                    const len = tipVec.length() * scaleMult;
+                    if (len < 0.025) {
+                        group.visible = false;
+                        return;
                     }
-                };
-            }
+                    group.visible = true;
+                    dirVec.copy(tipVec).normalize();
+                    group.quaternion.setFromUnitVectors(upVec, dirVec);
 
-            // -----------------------------------------------------------------
-            // DYNAMIC VERTICAL PROJECTION PLANE + DASHED DROP LINE
-            // -----------------------------------------------------------------
-            function createDynamicProjectionPlane(parent) {
-                // Triangle Mesh: Origin -> Floor(x,0,z) -> Tip(x,y,z)
-                const triGeo = new THREE.BufferGeometry();
-                const positions = new Float32Array(9);
-                triGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                    const effHead = Math.min(headLen, len * 0.44);
+                    const headScale = effHead / headLen;
+                    const shaftLen = Math.max(0.001, len - effHead);
 
-                const triMat = new THREE.MeshBasicMaterial({
-                    color: 0x38bdf8,
-                    transparent: true,
-                    opacity: 0.18,
-                    side: THREE.DoubleSide,
-                    depthWrite: false
-                });
-                const mesh = new THREE.Mesh(triGeo, triMat);
-                parent.add(mesh);
-                planeMeshes.push(triMat);
+                    shaft.scale.set(1, shaftLen, 1);
+                    head.scale.set(headScale, headScale, headScale);
+                    head.position.set(0, shaftLen, 0);
+                },
+                dispose() {
+                    shaftGeo.dispose();
+                    headGeo.dispose();
+                    mat.dispose();
+                    parent.remove(group);
+                }
+            };
+        }
 
-                // Solid Floor Projection Line: Origin -> Floor(x,0,z)
-                const floorGeo = new THREE.BufferGeometry();
-                floorGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6), 3));
-                const floorMat = new THREE.LineBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.85 });
-                const floorLine = new THREE.Line(floorGeo, floorMat);
-                parent.add(floorLine);
+        // ---------------------------------------------------------------------
+        // 3D VECTOR BUNDLE (ARROW + VERTICAL PROJECTION TRIANGLE + TIP SPRITE)
+        // ---------------------------------------------------------------------
+        function createVector3DBundle(vecObj) {
+            const bundleGroup = new THREE.Group();
+            vectorsGroup.add(bundleGroup);
 
-                // Crisp Dashed Vertical Drop Line: Floor(x,0,z) -> Tip(x,y,z)
-                const dropGeo = new THREE.BufferGeometry();
-                dropGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6), 3));
-                const dropMat = new THREE.LineDashedMaterial({
-                    color: 0x38bdf8,
-                    dashSize: 0.24,
-                    gapSize: 0.15,
-                    transparent: true,
-                    opacity: 0.9
-                });
-                const dropLine = new THREE.Line(dropGeo, dropMat);
-                parent.add(dropLine);
+            // 1. 3D Shaft + Cone Arrow
+            const arrow = createArrowMesh(vecObj.color.num, 0.105, 0.68, 0.25, bundleGroup);
 
-                return {
-                    update(tip) {
-                        // Update triangle vertices
+            // 2. Translucent Vertical Projection Triangle: Origin (0,0,0) -> Floor (x,0,z) -> Tip (x,y,z)
+            const triGeo = new THREE.BufferGeometry();
+            triGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(9), 3));
+            const triMat = new THREE.MeshBasicMaterial({
+                color: vecObj.color.num,
+                transparent: true,
+                opacity: state.theme === 'dark' ? 0.16 : 0.18,
+                side: THREE.DoubleSide,
+                depthWrite: false
+            });
+            const triMesh = new THREE.Mesh(triGeo, triMat);
+            bundleGroup.add(triMesh);
+
+            // 3. Floor Radial Line: (0,0,0) -> (x,0,z)
+            const floorGeo = new THREE.BufferGeometry();
+            floorGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6), 3));
+            const floorMat = new THREE.LineBasicMaterial({
+                color: vecObj.color.num,
+                transparent: true,
+                opacity: 0.78
+            });
+            const floorLine = new THREE.Line(floorGeo, floorMat);
+            bundleGroup.add(floorLine);
+
+            // 4. Dashed Vertical Drop Line: (x,0,z) -> (x,y,z)
+            const dropGeo = new THREE.BufferGeometry();
+            dropGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6), 3));
+            const dropMat = new THREE.LineDashedMaterial({
+                color: vecObj.color.num,
+                dashSize: 0.22,
+                gapSize: 0.14,
+                transparent: true,
+                opacity: 0.85
+            });
+            const dropLine = new THREE.Line(dropGeo, dropMat);
+            bundleGroup.add(dropLine);
+
+            // 5. Floating Canvas-Texture Sprite Label
+            const spriteObj = createTextSprite(`${vecObj.label}: ${Math.round(vecObj.mag)} N`, {
+                accentHex: vecObj.color.hex,
+                isAxis: false,
+                isDark: state.theme === 'dark'
+            });
+            bundleGroup.add(spriteObj.sprite);
+
+            const tipScaled = new THREE.Vector3();
+
+            return {
+                triMat,
+                spriteObj,
+                update(animatedTip, growth) {
+                    tipScaled.copy(animatedTip).multiplyScalar(growth);
+                    arrow.update(animatedTip, growth);
+
+                    const showProj = state.showPlanes && tipScaled.lengthSq() > 0.002;
+                    triMesh.visible = showProj;
+                    floorLine.visible = showProj;
+                    dropLine.visible = showProj;
+
+                    if (showProj) {
                         const p = triGeo.attributes.position.array;
-                        p[0] = 0;     p[1] = 0;     p[2] = 0;
-                        p[3] = tip.x; p[4] = 0;     p[5] = tip.z;
-                        p[6] = tip.x; p[7] = tip.y; p[8] = tip.z;
+                        p[0] = 0;           p[1] = 0;           p[2] = 0;
+                        p[3] = tipScaled.x; p[4] = 0;           p[5] = tipScaled.z;
+                        p[6] = tipScaled.x; p[7] = tipScaled.y; p[8] = tipScaled.z;
                         triGeo.attributes.position.needsUpdate = true;
 
-                        // Update floor projection line
                         const fp = floorGeo.attributes.position.array;
-                        fp[0] = 0;     fp[1] = 0.01; fp[2] = 0;
-                        fp[3] = tip.x; fp[4] = 0.01; fp[5] = tip.z;
+                        fp[0] = 0;           fp[1] = 0.015; fp[2] = 0;
+                        fp[3] = tipScaled.x; fp[4] = 0.015; fp[5] = tipScaled.z;
                         floorGeo.attributes.position.needsUpdate = true;
 
-                        // Update vertical drop line
                         const dp = dropGeo.attributes.position.array;
-                        dp[0] = tip.x; dp[1] = 0;     dp[2] = tip.z;
-                        dp[3] = tip.x; dp[4] = tip.y; dp[5] = tip.z;
+                        dp[0] = tipScaled.x; dp[1] = 0;           dp[2] = tipScaled.z;
+                        dp[3] = tipScaled.x; dp[4] = tipScaled.y; dp[5] = tipScaled.z;
                         dropGeo.attributes.position.needsUpdate = true;
                         dropLine.computeLineDistances();
                     }
-                };
-            }
 
-            // -----------------------------------------------------------------
-            // DYNAMIC 3D CURVED ANGLE ARC
-            // -----------------------------------------------------------------
-            function createDynamicArc(parent, colorHex = 0x38bdf8) {
-                const segments = 28;
-                const geo = new THREE.BufferGeometry();
-                geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array((segments + 1) * 3), 3));
-                const mat = new THREE.LineBasicMaterial({ color: colorHex, transparent: true, opacity: 0.92 });
-                const line = new THREE.Line(geo, mat);
-                parent.add(line);
-
-                const v1 = new THREE.Vector3();
-                const v2 = new THREE.Vector3();
-                const axis = new THREE.Vector3();
-                const pt = new THREE.Vector3();
-                const mid = new THREE.Vector3();
-
-                return {
-                    line,
-                    material: mat,
-                    midpoint: mid,
-                    update(dir1, dir2, radius) {
-                        if (dir1.lengthSq() < 1e-6 || dir2.lengthSq() < 1e-6) {
-                            line.visible = false;
-                            return false;
-                        }
-                        v1.copy(dir1).normalize();
-                        v2.copy(dir2).normalize();
-                        const angle = v1.angleTo(v2);
-                        if (angle < 0.025) {
-                            line.visible = false;
-                            return false;
-                        }
-                        line.visible = true;
-                        axis.crossVectors(v1, v2);
-                        if (axis.lengthSq() < 1e-6) {
-                            axis.set(0, 1, 0);
-                        } else {
-                            axis.normalize();
-                        }
-
-                        const arr = geo.attributes.position.array;
-                        for (let i = 0; i <= segments; i++) {
-                            const t = (i / segments) * angle;
-                            pt.copy(v1).applyAxisAngle(axis, t).multiplyScalar(radius);
-                            arr[i * 3] = pt.x;
-                            arr[i * 3 + 1] = pt.y;
-                            arr[i * 3 + 2] = pt.z;
-                        }
-                        geo.attributes.position.needsUpdate = true;
-
-                        // Midpoint pushed slightly outward for clean label tracking
-                        mid.copy(v1).applyAxisAngle(axis, angle * 0.5).multiplyScalar(radius * 1.28);
-                        return true;
-                    }
-                };
-            }
-
-            // -----------------------------------------------------------------
-            // BUILD COORDINATE AXES (+X, +Y, +Z & DASHED -X, -Z)
-            // -----------------------------------------------------------------
-            function buildAxes() {
-                const axesGroup = new THREE.Group();
-                scene.add(axesGroup);
-
-                const makeAxis = (endVec, isPositive = true) => {
-                    if (isPositive) {
-                        const arrow = createDynamicArrow(0x94a3b8, 0.036, 0.38, 0.12, axesGroup);
-                        arrow.update(endVec, 1);
-                        axisObjects.push({ type: 'mesh', mat: arrow.material });
+                    // Position Sprite Label cleanly past vector tip
+                    spriteObj.sprite.visible = growth > 0.2;
+                    if (tipScaled.lengthSq() > 0.001) {
+                        const dirOffset = tipScaled.clone().normalize().multiplyScalar(0.85);
+                        spriteObj.sprite.position.copy(tipScaled).add(dirOffset);
+                        spriteObj.sprite.position.y += 0.35;
                     } else {
-                        const geo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), endVec]);
-                        const mat = new THREE.LineDashedMaterial({
-                            color: 0x64748b,
-                            dashSize: 0.28,
-                            gapSize: 0.2,
-                            transparent: true,
-                            opacity: 0.55
-                        });
-                        const line = new THREE.Line(geo, mat);
-                        line.computeLineDistances();
-                        axesGroup.add(line);
-                        axisObjects.push({ type: 'line', mat });
+                        spriteObj.sprite.position.set(0, 0.9, 0);
                     }
-                };
-
-                // Positive Axes
-                makeAxis(new THREE.Vector3(9.5, 0, 0), true);   // +x
-                makeAxis(new THREE.Vector3(0, 11.5, 0), true);  // +y (vertical UP)
-                makeAxis(new THREE.Vector3(0, 0, 8.5), true);   // +z
-
-                // Dashed Negative Reference Extensions (-x, -z)
-                makeAxis(new THREE.Vector3(-5.0, 0, 0), false);
-                makeAxis(new THREE.Vector3(0, 0, -4.5), false);
-
-                // Sleek Origin Sphere O
-                const originMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.3, metalness: 0.4 });
-                const originSphere = new THREE.Mesh(new THREE.SphereGeometry(0.14, 24, 24), originMat);
-                axesGroup.add(originSphere);
-                axisObjects.push({ type: 'mesh', mat: originMat });
-            }
-
-            function rebuildGrid(isDark) {
-                if (gridHelper) {
-                    scene.remove(gridHelper);
-                    gridHelper.geometry.dispose();
-                    if (Array.isArray(gridHelper.material)) {
-                        gridHelper.material.forEach(m => m.dispose());
-                    } else {
-                        gridHelper.material.dispose();
-                    }
+                    spriteObj.sprite.material.opacity = THREE.MathUtils.clamp((growth - 0.15) / 0.65, 0, 1);
+                },
+                dispose() {
+                    arrow.dispose();
+                    triGeo.dispose();
+                    triMat.dispose();
+                    floorGeo.dispose();
+                    floorMat.dispose();
+                    dropGeo.dispose();
+                    dropMat.dispose();
+                    spriteObj.dispose();
+                    vectorsGroup.remove(bundleGroup);
                 }
-                const centerCol = isDark ? 0x334155 : 0x94a3b8;
-                const gridCol   = isDark ? 0x1e293b : 0xcbd5e1;
-                gridHelper = new THREE.GridHelper(20, 20, centerCol, gridCol);
-                gridHelper.position.y = -0.015;
-                gridHelper.material.transparent = true;
-                gridHelper.material.opacity = isDark ? 0.55 : 0.65;
-                gridHelper.visible = state.showGrid;
-                scene.add(gridHelper);
-            }
+            };
+        }
 
-            // -----------------------------------------------------------------
-            // BUILD RESULTANT PARALLELOGRAM LINES
-            // -----------------------------------------------------------------
-            function createDashedConnector(parent) {
-                const geo = new THREE.BufferGeometry();
-                geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6), 3));
-                const mat = new THREE.LineDashedMaterial({
-                    color: 0x10b981,
-                    dashSize: 0.32,
-                    gapSize: 0.18,
-                    transparent: true,
-                    opacity: 0
+        // ---------------------------------------------------------------------
+        // COORDINATE AXES, GRID & SPRITE LABELS (+X, -X, +Y, -Y, +Z, -Z, O)
+        // ---------------------------------------------------------------------
+        function buildCoordinateSystem() {
+            axisGroup = new THREE.Group();
+            scene.add(axisGroup);
+
+            const makeAxisRod = (dirVec, length, isPositive) => {
+                const mat = new THREE.MeshStandardMaterial({
+                    color: 0x94a3b8,
+                    roughness: 0.35,
+                    metalness: 0.25,
+                    transparent: !isPositive,
+                    opacity: isPositive ? 1.0 : 0.45
                 });
-                const line = new THREE.Line(geo, mat);
-                parent.add(line);
-                return {
-                    line,
-                    material: mat,
-                    update(p1, p2, opacity) {
-                        const arr = geo.attributes.position.array;
-                        arr[0] = p1.x; arr[1] = p1.y; arr[2] = p1.z;
-                        arr[3] = p2.x; arr[4] = p2.y; arr[5] = p2.z;
-                        geo.attributes.position.needsUpdate = true;
-                        line.computeLineDistances();
-                        mat.opacity = opacity;
-                        line.visible = opacity > 0.02;
-                    }
-                };
-            }
+                axisMaterials.push({ mat, isPositive });
 
-            // -----------------------------------------------------------------
-            // REGISTER FLOATING 3D HTML LABELS
-            // -----------------------------------------------------------------
-            function addLabel(key, text, className, initialPos, category = 'core') {
-                const el = document.createElement('div');
-                el.className = `label-3d ${className}`;
-                el.textContent = text;
-                labelsLayer.appendChild(el);
-                labelMap[key] = {
-                    el,
-                    pos: initialPos.clone(),
-                    category,
-                    visible: true
-                };
-            }
+                const headLen = isPositive ? 0.42 : 0.28;
+                const headRad = isPositive ? 0.14 : 0.09;
+                const rodRad  = isPositive ? 0.042 : 0.026;
+                const shaftLen = length - headLen;
 
-            function registerAllLabels() {
-                addLabel('origin', 'O', 'label-axis text-sm opacity-80', new THREE.Vector3(-0.42, -0.35, -0.35), 'axis');
-                addLabel('axisX', 'x', 'label-axis', new THREE.Vector3(10.0, -0.15, 0), 'axis');
-                addLabel('axisNegX', '−x', 'label-axis text-xs opacity-60', new THREE.Vector3(-5.4, 0.1, 0), 'axis');
-                addLabel('axisY', 'y', 'label-axis', new THREE.Vector3(0, 12.0, 0), 'axis');
-                addLabel('axisZ', 'z', 'label-axis', new THREE.Vector3(0, -0.15, 9.0), 'axis');
+                const g = new THREE.Group();
+                const shaftGeo = new THREE.CylinderGeometry(rodRad, rodRad, shaftLen, 20);
+                shaftGeo.translate(0, shaftLen * 0.5, 0);
+                const headGeo = new THREE.ConeGeometry(headRad, headLen, 24);
+                headGeo.translate(0, shaftLen + headLen * 0.5, 0);
 
-                addLabel('vecA', 'A = 750 N', 'label-pill text-rose-400', new THREE.Vector3(), 'vector');
-                addLabel('vecB', 'B = 900 N', 'label-pill text-orange-400', new THREE.Vector3(), 'vector');
-                addLabel('vecR', 'F_R = 1550.2 N', 'label-pill text-emerald-400', new THREE.Vector3(), 'resultant');
-
-                addLabel('ang35', '35°', 'label-angle', new THREE.Vector3(), 'arc');
-                addLabel('ang25', '25°', 'label-angle', new THREE.Vector3(), 'arc');
-                addLabel('ang65', '65°', 'label-angle', new THREE.Vector3(), 'arc');
-                addLabel('ang20', '20°', 'label-angle', new THREE.Vector3(), 'arc');
-            }
-
-            const projScratch = new THREE.Vector3();
-            function updateLabelsScreenPositions() {
-                const w = window.innerWidth;
-                const h = window.innerHeight;
-
-                for (const key in labelMap) {
-                    const item = labelMap[key];
-                    let shouldShow = item.visible;
-
-                    if (item.category === 'arc' && !state.showArcs) shouldShow = false;
-                    if (item.category === 'resultant' && resultantProgress < 0.25) shouldShow = false;
-
-                    if (!shouldShow) {
-                        item.el.style.opacity = '0';
-                        continue;
-                    }
-
-                    projScratch.copy(item.pos).project(camera);
-                    if (projScratch.z > 1) {
-                        item.el.style.opacity = '0';
-                        continue;
-                    }
-
-                    const sx = (projScratch.x * 0.5 + 0.5) * w;
-                    const sy = (-projScratch.y * 0.5 + 0.5) * h;
-
-                    item.el.style.left = `${sx}px`;
-                    item.el.style.top = `${sy}px`;
-                    item.el.style.opacity = item.category === 'resultant'
-                        ? String(THREE.MathUtils.clamp((resultantProgress - 0.2) / 0.6, 0, 1))
-                        : '1';
-                }
-            }
-
-            // -----------------------------------------------------------------
-            // THEME SYNCHRONIZATION (CSS + THREE.JS SCENE)
-            // -----------------------------------------------------------------
-            function applyTheme(themeName, persist = true) {
-                state.theme = themeName;
-                const isDark = themeName === 'dark';
-                document.documentElement.setAttribute('data-theme', themeName);
-
-                if (persist) {
-                    try { localStorage.setItem('vectorlab_theme', themeName); } catch (_) {}
-                }
-
-                if (!scene) return;
-
-                // Subtle fog that blends edges softly into the ambient background
-                scene.fog = new THREE.FogExp2(isDark ? 0x070b14 : 0xeef3f9, 0.014);
-
-                // Lighting balance
-                ambientLight.intensity = isDark ? 0.75 : 0.95;
-                keyLight.intensity = isDark ? 0.95 : 0.75;
-                rimLight.intensity = isDark ? 0.55 : 0.35;
-
-                // Axis colors
-                const axisCol = isDark ? 0x94a3b8 : 0x334155;
-                const negAxisCol = isDark ? 0x475569 : 0x94a3b8;
-                axisObjects.forEach(obj => {
-                    obj.mat.color.setHex(obj.type === 'mesh' ? axisCol : negAxisCol);
-                });
-
-                // Projection plane translucency
-                planeMeshes.forEach(mat => {
-                    mat.color.setHex(isDark ? 0x38bdf8 : 0x0284c7);
-                    mat.opacity = isDark ? 0.16 : 0.18;
-                });
-
-                // Arc line contrast
-                const arcCol = isDark ? 0x7dd3fc : 0x0369a1;
-                [arc35Obj, arc25Obj, arc65Obj, arc20Obj].forEach(arc => {
-                    if (arc) arc.material.color.setHex(arcCol);
-                });
-
-                // Label accent colors for crisp contrast in both themes
-                if (labelMap.vecA) {
-                    labelMap.vecA.el.className = `label-3d label-pill ${isDark ? 'text-rose-400' : 'text-rose-600'}`;
-                    labelMap.vecB.el.className = `label-3d label-pill ${isDark ? 'text-orange-400' : 'text-orange-600'}`;
-                    labelMap.vecR.el.className = `label-3d label-pill ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`;
-                }
-
-                rebuildGrid(isDark);
-            }
-
-            // -----------------------------------------------------------------
-            // CAMERA PRESETS & SMOOTH CUBIC-EASED INTERPOLATION
-            // -----------------------------------------------------------------
-            const CAMERA_PRESETS = {
-                textbook: { pos: new THREE.Vector3(14.0, 9.6, 16.2), target: new THREE.Vector3(0.6, 3.8, 1.0) },
-                top:      { pos: new THREE.Vector3(0.6, 23.0, 0.05), target: new THREE.Vector3(0.6, 0.0, 1.4) },
-                front:    { pos: new THREE.Vector3(0.8, 4.4, 22.5),  target: new THREE.Vector3(0.8, 4.4, 0.0) },
-                side:     { pos: new THREE.Vector3(22.5, 4.4, 1.5),  target: new THREE.Vector3(0.0, 4.4, 1.5) }
+                g.add(new THREE.Mesh(shaftGeo, mat), new THREE.Mesh(headGeo, mat));
+                g.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dirVec.clone().normalize());
+                axisGroup.add(g);
+                return g;
             };
 
-            function animateCameraTo(presetName) {
-                const preset = CAMERA_PRESETS[presetName] || CAMERA_PRESETS.textbook;
-                camAnim.active = true;
-                camAnim.startTime = performance.now();
-                camAnim.startPos.copy(camera.position);
-                camAnim.endPos.copy(preset.pos);
-                camAnim.startTarget.copy(controls.target);
-                camAnim.endTarget.copy(preset.target);
-
-                // If resultant is visible and we're in textbook view, pull back gently
-                if (presetName === 'textbook' && state.showResultant) {
-                    camAnim.endPos.multiplyScalar(1.22);
-                    camAnim.endTarget.y = 5.4;
-                }
-            }
-
-            function positionDockPill(activeBtn) {
-                const pill = document.getElementById('dock-pill');
-                if (!pill || !activeBtn) return;
-                pill.style.width = `${activeBtn.offsetWidth}px`;
-                pill.style.transform = `translateX(${activeBtn.offsetLeft - 5}px)`;
-            }
-
-            // -----------------------------------------------------------------
-            // UI EVENT HANDLERS (EXPOSED GLOBALLY FOR INLINE BUTTONS)
-            // -----------------------------------------------------------------
-            window.setCameraPreset = function (presetName, btnEl) {
-                document.querySelectorAll('.dock-btn').forEach(b => b.classList.remove('active'));
-                if (btnEl) {
-                    btnEl.classList.add('active');
-                    positionDockPill(btnEl);
-                }
-                animateCameraTo(presetName);
+            // Positive & Negative Rods for X, Y, Z (dynamically oriented in animate loop)
+            axisRods = {
+                posX: makeAxisRod(new THREE.Vector3(1, 0, 0), 11.8, true),
+                negX: makeAxisRod(new THREE.Vector3(-1, 0, 0), 9.6, false),
+                posY: makeAxisRod(new THREE.Vector3(0, 1, 0), 11.8, true),
+                negY: makeAxisRod(new THREE.Vector3(0, -1, 0), 9.6, false),
+                posZ: makeAxisRod(new THREE.Vector3(0, 0, 1), 11.8, true),
+                negZ: makeAxisRod(new THREE.Vector3(0, 0, -1), 9.6, false)
             };
 
-            window.toggleTheme = function () {
-                applyTheme(state.theme === 'dark' ? 'light' : 'dark', true);
-            };
+            // Origin Sphere
+            const originMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.25, metalness: 0.4 });
+            axisMaterials.push({ mat: originMat, isPositive: true });
+            const originSphere = new THREE.Mesh(new THREE.SphereGeometry(0.16, 24, 24), originMat);
+            axisGroup.add(originSphere);
 
-            window.toggleAutoOrbit = function () {
-                state.autoOrbit = !state.autoOrbit;
-                controls.autoRotate = state.autoOrbit;
-                document.getElementById('btn-orbit').classList.toggle('active-state', state.autoOrbit);
-            };
-
-            window.toggleInspector = function () {
-                state.inspectorOpen = !state.inspectorOpen;
-                const panel = document.getElementById('inspector-panel');
-                panel.classList.toggle('collapsed', !state.inspectorOpen);
-                document.getElementById('btn-toggle-inspector').classList.toggle('active-state', state.inspectorOpen);
-            };
-
-            window.onToggleResultant = function (checked) {
-                state.showResultant = checked;
-                if (checked && camera.position.length() < 24) {
-                    // Gently frame the taller resultant vector
-                    const activeBtn = document.querySelector('.dock-btn.active');
-                    const preset = activeBtn ? activeBtn.dataset.preset : 'textbook';
-                    if (preset === 'textbook') animateCameraTo('textbook');
-                }
-            };
-
-            window.onToggleDisplay = function () {
-                state.showPlanes = document.getElementById('toggle-planes').checked;
-                state.showArcs   = document.getElementById('toggle-arcs').checked;
-                state.showGrid   = document.getElementById('toggle-grid').checked;
-
-                planesGroup.visible = state.showPlanes;
-                arcsGroup.visible   = state.showArcs;
-                if (gridHelper) gridHelper.visible = state.showGrid;
-            };
-
-            window.resetTextbookDefaults = function () {
-                Object.assign(state, TEXTBOOK_DEFAULTS);
-                syncInputsFromState();
-                updateMathAndTargets(false);
-                const tbBtn = document.querySelector('.dock-btn[data-preset="textbook"]');
-                window.setCameraPreset('textbook', tbBtn);
-            };
-
-            // Sync Sliders <-> Numeric Inputs
-            const controlBindings = [
-                { key: 'aMag',   rng: 'rng-a-mag',   num: 'num-a-mag',   min: 100, max: 1500 },
-                { key: 'aTheta', rng: 'rng-a-theta', num: 'num-a-theta', min: 1,   max: 89   },
-                { key: 'aPhi',   rng: 'rng-a-phi',   num: 'num-a-phi',   min: -85, max: 85   },
-                { key: 'bMag',   rng: 'rng-b-mag',   num: 'num-b-mag',   min: 100, max: 1500 },
-                { key: 'bElev',  rng: 'rng-b-elev',  num: 'num-b-elev',  min: 1,   max: 89   },
-                { key: 'bPhi',   rng: 'rng-b-phi',   num: 'num-b-phi',   min: -85, max: 85   }
+            // Floating Sprite Axis Labels
+            const axisDefinitions = [
+                { key: 'posX', text: '+X', pos: new THREE.Vector3(12.6, 0, 0) },
+                { key: 'negX', text: '−X', pos: new THREE.Vector3(-10.3, 0, 0) },
+                { key: 'posY', text: '+Y', pos: new THREE.Vector3(0, 12.6, 0) },
+                { key: 'negY', text: '−Y', pos: new THREE.Vector3(0, -10.3, 0) },
+                { key: 'posZ', text: '+Z', pos: new THREE.Vector3(0, 0, 12.6) },
+                { key: 'negZ', text: '−Z', pos: new THREE.Vector3(0, 0, -10.3) },
+                { key: 'origin', text: 'O',  pos: new THREE.Vector3(-0.55, -0.45, -0.55) }
             ];
 
-            function syncInputsFromState() {
-                controlBindings.forEach(b => {
-                    document.getElementById(b.rng).value = state[b.key];
-                    document.getElementById(b.num).value = state[b.key];
-                });
+            axisDefinitions.forEach(item => {
+                const sp = createTextSprite(item.text, { isAxis: true, isDark: state.theme === 'dark' });
+                sp.sprite.position.copy(item.pos);
+                axisGroup.add(sp.sprite);
+                axisSprites.push(sp);
+                axisLabelMap[item.key] = sp.sprite;
+            });
+        }
+
+        const _upUnit = new THREE.Vector3(0, 1, 0);
+        const _tmpDir = new THREE.Vector3();
+
+        function updateCoordinateAxes3D() {
+            const sys = getActiveAxisConfig();
+            const lerpAlpha = 0.16;
+
+            ['x', 'y', 'z'].forEach(axisKey => {
+                currentAxisBasis[axisKey].lerp(sys.basis[axisKey], lerpAlpha);
+                if (currentAxisBasis[axisKey].lengthSq() < 1e-5) {
+                    currentAxisBasis[axisKey].copy(sys.basis[axisKey]);
+                } else {
+                    currentAxisBasis[axisKey].normalize();
+                }
+            });
+
+            const bx = currentAxisBasis.x;
+            const by = currentAxisBasis.y;
+            const bz = currentAxisBasis.z;
+
+            // Update +X / -X rods & labels
+            axisRods.posX.quaternion.setFromUnitVectors(_upUnit, bx);
+            _tmpDir.copy(bx).negate();
+            axisRods.negX.quaternion.setFromUnitVectors(_upUnit, _tmpDir);
+            axisLabelMap.posX.position.copy(bx).multiplyScalar(12.6);
+            axisLabelMap.negX.position.copy(bx).multiplyScalar(-10.3);
+
+            // Update +Y / -Y rods & labels
+            axisRods.posY.quaternion.setFromUnitVectors(_upUnit, by);
+            _tmpDir.copy(by).negate();
+            axisRods.negY.quaternion.setFromUnitVectors(_upUnit, _tmpDir);
+            axisLabelMap.posY.position.copy(by).multiplyScalar(12.6);
+            axisLabelMap.negY.position.copy(by).multiplyScalar(-10.3);
+
+            // Update +Z / -Z rods & labels
+            axisRods.posZ.quaternion.setFromUnitVectors(_upUnit, bz);
+            _tmpDir.copy(bz).negate();
+            axisRods.negZ.quaternion.setFromUnitVectors(_upUnit, _tmpDir);
+            axisLabelMap.posZ.position.copy(bz).multiplyScalar(12.6);
+            axisLabelMap.negZ.position.copy(bz).multiplyScalar(-10.3);
+        }
+
+        function rebuildGrid(isDark) {
+            if (gridHelper) {
+                scene.remove(gridHelper);
+                gridHelper.geometry.dispose();
+                if (Array.isArray(gridHelper.material)) {
+                    gridHelper.material.forEach(m => m.dispose());
+                } else {
+                    gridHelper.material.dispose();
+                }
+            }
+            const centerCol = isDark ? 0x334155 : 0x94a3b8;
+            const lineCol   = isDark ? 0x1e293b : 0xcbd5e1;
+            gridHelper = new THREE.GridHelper(22, 22, centerCol, lineCol);
+            gridHelper.position.y = -0.01;
+            gridHelper.material.transparent = true;
+            gridHelper.material.opacity = isDark ? 0.52 : 0.65;
+            gridHelper.visible = state.showGrid;
+            scene.add(gridHelper);
+        }
+
+        // ---------------------------------------------------------------------
+        // MULTI-VECTOR MANAGEMENT (ADD, UPDATE, REMOVE, CLEAR, DEMO, AXIS SWAP)
+        // ---------------------------------------------------------------------
+        function getNextAvailableSlot() {
+            const usedSlots = new Set(state.vectors.map(v => v.slot));
+            for (let i = 0; i < MAX_VECTORS; i++) {
+                if (!usedSlots.has(i)) return i;
+            }
+            return -1;
+        }
+
+        window.addVector = function (customConfig = null) {
+            if (state.vectors.length >= MAX_VECTORS) return;
+
+            const slot = getNextAvailableSlot();
+            if (slot === -1) return;
+
+            const paletteEntry = VECTOR_PALETTE[slot % VECTOR_PALETTE.length];
+            const label = `F${slot + 1}`;
+            const mag = customConfig ? customConfig.mag : 500;
+            const elev = customConfig ? customConfig.elev : 30;
+            const azim = customConfig ? customConfig.azim : (slot * 36) % 360;
+
+            const comp = computeCartesian(mag, elev, azim, state.axisPreset);
+            const targetSceneVec = physToSceneVec(comp, state.axisPreset);
+
+            const vecObj = {
+                id: `vec_${Date.now()}_${slot}`,
+                slot,
+                label,
+                color: paletteEntry,
+                mag,
+                elev,
+                azim,
+                collapsed: false,
+                components: comp,
+                targetSceneVec,
+                currentSceneVec: targetSceneVec.clone(),
+                growth: 0.01, // Animates smoothly to 1.0
+                meshBundle: null
+            };
+
+            vecObj.meshBundle = createVector3DBundle(vecObj);
+            state.vectors.push(vecObj);
+
+            renderVectorCards();
+            updateResultantUI();
+        };
+
+        window.removeVector = function (id) {
+            const idx = state.vectors.findIndex(v => v.id === id);
+            if (idx === -1) return;
+            const [removed] = state.vectors.splice(idx, 1);
+            if (removed.meshBundle) removed.meshBundle.dispose();
+
+            renderVectorCards();
+            updateResultantUI();
+        };
+
+        window.clearAllVectors = function () {
+            state.vectors.forEach(v => {
+                if (v.meshBundle) v.meshBundle.dispose();
+            });
+            state.vectors = [];
+            renderVectorCards();
+            updateResultantUI();
+        };
+
+        window.loadTwoForceDemo = function () {
+            window.clearAllVectors();
+            // Vector F1: 750 N, elevation 55° above XZ (35° from +Y), azimuth 25°
+            window.addVector({ mag: 750, elev: 55, azim: 25 });
+            // Vector F2: 900 N, elevation 65° above XZ, azimuth 110° (20° from +Z toward -X)
+            window.addVector({ mag: 900, elev: 65, azim: 110 });
+        };
+
+        window.toggleCardCollapse = function (id) {
+            const vecObj = state.vectors.find(v => v.id === id);
+            if (!vecObj) return;
+            vecObj.collapsed = !vecObj.collapsed;
+            const body = document.getElementById(`card-body-${id}`);
+            const chev = document.getElementById(`card-chev-${id}`);
+            if (body) body.classList.toggle('hidden', vecObj.collapsed);
+            if (chev) chev.style.transform = vecObj.collapsed ? 'rotate(-90deg)' : 'rotate(0deg)';
+        };
+
+        window.updateVectorParam = function (id, param, rawValue, sourceType) {
+            const vecObj = state.vectors.find(v => v.id === id);
+            if (!vecObj) return;
+
+            let val = parseFloat(rawValue);
+            if (Number.isNaN(val)) return;
+
+            if (param === 'mag')  val = THREE.MathUtils.clamp(val, 0, 2000);
+            if (param === 'elev') val = THREE.MathUtils.clamp(val, -90, 90);
+            if (param === 'azim') val = THREE.MathUtils.clamp(val, 0, 360);
+
+            vecObj[param] = val;
+
+            // Sync paired slider / number input
+            const rngEl = document.getElementById(`rng-${param}-${id}`);
+            const numEl = document.getElementById(`num-${param}-${id}`);
+            if (sourceType === 'range' && numEl) numEl.value = val;
+            if (sourceType === 'number' && rngEl) rngEl.value = val;
+
+            // Recompute Cartesian components in active coordinate system
+            const comp = computeCartesian(vecObj.mag, vecObj.elev, vecObj.azim, state.axisPreset);
+            vecObj.components = comp;
+            physToSceneVec(comp, state.axisPreset, vecObj.targetSceneVec);
+
+            // Update Card Header Pill & Component Readouts
+            const pillEl = document.getElementById(`pill-mag-${id}`);
+            if (pillEl) pillEl.textContent = `${Math.round(vecObj.mag)} N`;
+
+            const fxEl = document.getElementById(`comp-fx-${id}`);
+            const fyEl = document.getElementById(`comp-fy-${id}`);
+            const fzEl = document.getElementById(`comp-fz-${id}`);
+            if (fxEl) fxEl.textContent = `${comp.x.toFixed(1)} N`;
+            if (fyEl) fyEl.textContent = `${comp.y.toFixed(1)} N`;
+            if (fzEl) fzEl.textContent = `${comp.z.toFixed(1)} N`;
+
+            // Update 3D Sprite Label Text
+            if (vecObj.meshBundle && vecObj.meshBundle.spriteObj) {
+                vecObj.meshBundle.spriteObj.redraw(`${vecObj.label}: ${Math.round(vecObj.mag)} N`, state.theme === 'dark');
             }
 
-            function bindControls() {
-                controlBindings.forEach(b => {
-                    const rngEl = document.getElementById(b.rng);
-                    const numEl = document.getElementById(b.num);
+            updateResultantUI();
+        };
 
-                    rngEl.addEventListener('input', () => {
-                        const val = parseFloat(rngEl.value);
-                        state[b.key] = val;
-                        numEl.value = val;
-                        updateMathAndTargets(false);
-                    });
+        // ---------------------------------------------------------------------
+        // SWAPPABLE AXIS ORIENTATION & PAIRWISE COMPONENT TRANSPOSITION
+        // ---------------------------------------------------------------------
+        function positionAxisSegPill(activeBtn) {
+            const pill = document.getElementById('axis-seg-pill');
+            if (!pill || !activeBtn) return;
+            pill.style.width = `${activeBtn.offsetWidth}px`;
+            pill.style.transform = `translateX(${activeBtn.offsetLeft - 3}px)`;
+        }
 
-                    numEl.addEventListener('input', () => {
-                        let val = parseFloat(numEl.value);
-                        if (Number.isNaN(val)) return;
-                        val = THREE.MathUtils.clamp(val, b.min, b.max);
-                        state[b.key] = val;
-                        rngEl.value = val;
-                        updateMathAndTargets(false);
-                    });
-                });
-            }
+        function updateDockLabelsForAxisPreset(presetKey) {
+            const sys = getActiveAxisConfig(presetKey);
+            const map = {
+                isometric: document.getElementById('dock-btn-isometric'),
+                top: document.getElementById('dock-btn-top'),
+                front: document.getElementById('dock-btn-front'),
+                side: document.getElementById('dock-btn-side')
+            };
+            Object.entries(map).forEach(([key, el]) => {
+                if (el && sys.dockLabels[key]) {
+                    el.textContent = sys.dockLabels[key];
+                }
+            });
+            requestAnimationFrame(() => {
+                positionDockPill(document.querySelector('.dock-btn.active'));
+            });
+        }
 
-            // -----------------------------------------------------------------
-            // INITIALIZE THREE.JS SCENE
-            // -----------------------------------------------------------------
-            function initScene() {
-                const container = document.getElementById('viewport');
+        window.setAxisPreset = function (presetKey, btnEl = null) {
+            if (!AXIS_PRESETS[presetKey]) return;
+            state.axisPreset = presetKey;
+            const sys = getActiveAxisConfig(presetKey);
 
-                scene = new THREE.Scene();
+            // Update segmented pill UI
+            document.querySelectorAll('.axis-seg-btn').forEach(b => {
+                const isMatch = b.dataset.axis === presetKey;
+                b.classList.toggle('active', isMatch);
+                if (isMatch && !btnEl) btnEl = b;
+            });
+            if (btnEl) positionAxisSegPill(btnEl);
 
-                camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 200);
-                camera.position.copy(CAMERA_PRESETS.textbook.pos);
+            // Update live mapping subtitle
+            const subEl = document.getElementById('axis-mapping-subtitle');
+            if (subEl) subEl.textContent = sys.subtitle;
 
-                renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
-                renderer.setSize(window.innerWidth, window.innerHeight);
-                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-                renderer.outputEncoding = THREE.sRGBEncoding;
-                container.appendChild(renderer.domElement);
+            // Update bottom camera dock labels
+            updateDockLabelsForAxisPreset(presetKey);
 
-                // Smooth Damped OrbitControls
-                controls = new THREE.OrbitControls(camera, renderer.domElement);
-                controls.enableDamping = true;
-                controls.dampingFactor = 0.06;
-                controls.rotateSpeed = 0.78;
-                controls.zoomSpeed = 0.9;
-                controls.panSpeed = 0.75;
-                controls.minDistance = 7;
-                controls.maxDistance = 55;
-                controls.autoRotate = false;
-                controls.autoRotateSpeed = 1.1;
-                controls.target.copy(CAMERA_PRESETS.textbook.target);
+            // Preserve true physical (Fx, Fy, Fz) for all vectors, recalculate Elevation & Azimuth,
+            // and update targetSceneVec so vectors smoothly lerp to the new 3D orientation
+            state.vectors.forEach(v => {
+                const sph = cartesianToSpherical(v.components, presetKey, v.azim);
+                v.mag = sph.mag;
+                v.elev = sph.elev;
+                v.azim = sph.azim;
+                physToSceneVec(v.components, presetKey, v.targetSceneVec);
+            });
 
-                // Cancel camera preset animation & pause Auto-Orbit when user grabs the canvas
-                controls.addEventListener('start', () => {
-                    camAnim.active = false;
-                    if (state.autoOrbit) {
-                        state.autoOrbit = false;
-                        controls.autoRotate = false;
-                        document.getElementById('btn-orbit').classList.remove('active-state');
+            renderVectorCards();
+            updateResultantUI();
+        };
+
+        window.swapAxes = function (axisA, axisB) {
+            if (axisA === axisB) return;
+
+            state.vectors.forEach(v => {
+                const temp = v.components[axisA];
+                v.components[axisA] = v.components[axisB];
+                v.components[axisB] = temp;
+
+                const sph = cartesianToSpherical(v.components, state.axisPreset, v.azim);
+                v.mag = sph.mag;
+                v.elev = sph.elev;
+                v.azim = sph.azim;
+                physToSceneVec(v.components, state.axisPreset, v.targetSceneVec);
+            });
+
+            renderVectorCards();
+            updateResultantUI();
+
+            // Trigger visual flash on the two swapped component boxes across all vector cards
+            state.vectors.forEach(v => {
+                [axisA, axisB].forEach(ax => {
+                    const cell = document.getElementById(`cell-f${ax}-${v.id}`);
+                    if (cell) {
+                        cell.classList.remove('comp-flash');
+                        void cell.offsetWidth;
+                        cell.classList.add('comp-flash');
                     }
                 });
+            });
+        };
 
-                // Studio 3-Point Lighting
-                ambientLight = new THREE.AmbientLight(0xffffff, 0.75);
-                scene.add(ambientLight);
+        // ---------------------------------------------------------------------
+        // RENDER SIDEBAR VECTOR CARDS & EMPTY STATE
+        // ---------------------------------------------------------------------
+        function renderVectorCards() {
+            const listEl = document.getElementById('vectors-list');
+            const count = state.vectors.length;
+            const sys = getActiveAxisConfig();
 
-                keyLight = new THREE.DirectionalLight(0xffffff, 0.95);
-                keyLight.position.set(14, 24, 18);
-                scene.add(keyLight);
+            // Update Top Badges & + Add Vector Button State
+            document.getElementById('header-count-badge').textContent = `${count} / ${MAX_VECTORS}`;
+            document.getElementById('summary-active-pill').textContent = `${count} / ${MAX_VECTORS} Active`;
+            document.getElementById('add-btn-badge').textContent = `${count} / ${MAX_VECTORS}`;
 
-                rimLight = new THREE.DirectionalLight(0x7dd3fc, 0.55);
-                rimLight.position.set(-16, 10, -14);
-                scene.add(rimLight);
+            const addBtn = document.getElementById('btn-add-vector');
+            const addIcon = document.getElementById('add-btn-icon');
+            const addLabel = document.getElementById('add-btn-label');
 
-                // Coordinate Axes
-                buildAxes();
-
-                // Main Vector Arrows
-                arrowA = createDynamicArrow(0xf43f5e, 0.115, 0.72, 0.27, scene); // Vibrant Coral-Red
-                arrowB = createDynamicArrow(0xf97316, 0.115, 0.72, 0.27, scene); // Vibrant Amber-Coral
-
-                // Projection Planes Group
-                planesGroup = new THREE.Group();
-                scene.add(planesGroup);
-                planeAObj = createDynamicProjectionPlane(planesGroup);
-                planeBObj = createDynamicProjectionPlane(planesGroup);
-
-                // Angle Arcs Group
-                arcsGroup = new THREE.Group();
-                scene.add(arcsGroup);
-                arc35Obj = createDynamicArc(arcsGroup);
-                arc25Obj = createDynamicArc(arcsGroup);
-                arc65Obj = createDynamicArc(arcsGroup);
-                arc20Obj = createDynamicArc(arcsGroup);
-
-                // Resultant Force Group
-                resultantGroup = new THREE.Group();
-                scene.add(resultantGroup);
-                arrowR = createDynamicArrow(0x10b981, 0.125, 0.80, 0.30, resultantGroup);
-                paraLine1 = createDashedConnector(resultantGroup);
-                paraLine2 = createDashedConnector(resultantGroup);
-
-                // Labels & Initial Geometry
-                registerAllLabels();
-                updateMathAndTargets(true);
-
-                // Load saved theme (default Dark Mode)
-                let savedTheme = 'dark';
-                try {
-                    const stored = localStorage.getItem('vectorlab_theme');
-                    if (stored === 'light' || stored === 'dark') savedTheme = stored;
-                } catch (_) {}
-                applyTheme(savedTheme, false);
-
-                // Inspector initial responsive state
-                const panel = document.getElementById('inspector-panel');
-                if (!state.inspectorOpen) {
-                    panel.classList.add('collapsed');
-                } else {
-                    document.getElementById('btn-toggle-inspector').classList.add('active-state');
-                }
-
-                // Position initial camera dock pill
-                requestAnimationFrame(() => {
-                    positionDockPill(document.querySelector('.dock-btn.active'));
-                });
-
-                window.addEventListener('resize', onResize);
+            if (count >= MAX_VECTORS) {
+                addBtn.disabled = true;
+                addIcon.classList.add('hidden');
+                addLabel.textContent = 'Max 10 Reached';
+            } else {
+                addBtn.disabled = false;
+                addIcon.classList.remove('hidden');
+                addLabel.textContent = '+ Add Vector';
             }
 
-            function onResize() {
-                if (!camera || !renderer) return;
+            if (count === 0) {
+                listEl.innerHTML = `
+                    <div class="glass-card card-enter rounded-2xl p-5 text-center space-y-2.5">
+                        <div class="w-10 h-10 rounded-2xl mx-auto flex items-center justify-center" style="background: var(--pill-bg); border: 1px solid var(--pill-border);">
+                            <svg class="w-5 h-5 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 5v14M5 12h14"/>
+                            </svg>
+                        </div>
+                        <div class="text-xs font-bold" style="color: var(--text-primary);">Clean 3D Workspace Ready</div>
+                        <p class="text-[11px] leading-relaxed" style="color: var(--text-secondary);">
+                            Click <strong style="color: var(--text-primary);">+ Add Vector</strong> above to place your first 3D force vector, or click <strong class="text-sky-400 cursor-pointer" onclick="window.loadTwoForceDemo()">Load 2-Force Demo</strong>.
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+
+            listEl.innerHTML = state.vectors.map(v => {
+                const { id, label, color, mag, elev, azim, collapsed, components } = v;
+                return `
+                    <div class="glass-card card-enter rounded-2xl p-3.5 space-y-3" id="card-${id}">
+                        <!-- Card Header -->
+                        <div class="flex items-center justify-between gap-2">
+                            <button type="button" onclick="window.toggleCardCollapse('${id}')" class="flex items-center gap-2 text-left flex-1 min-w-0 cursor-pointer">
+                                <span class="w-3 h-3 rounded-full shrink-0" style="background: ${color.hex}; box-shadow: 0 0 10px ${color.hex}99;"></span>
+                                <span class="text-xs font-bold truncate" style="color: var(--text-primary);">Vector ${label}</span>
+                                <span class="text-[10px] truncate hidden sm:inline" style="color: var(--text-muted);">(${color.name})</span>
+                            </button>
+
+                            <div class="flex items-center gap-1.5 shrink-0">
+                                <span id="pill-mag-${id}" class="font-mono-num text-[11px] font-bold px-2 py-0.5 rounded-full" style="background: ${color.hex}22; color: ${color.hex}; border: 1px solid ${color.hex}44;">
+                                    ${Math.round(mag)} N
+                                </span>
+
+                                <button type="button" onclick="window.toggleCardCollapse('${id}')" title="Collapse / Expand"
+                                    class="glass-btn w-6 h-6 rounded-lg flex items-center justify-center cursor-pointer">
+                                    <svg id="card-chev-${id}" class="w-3.5 h-3.5 transition-transform duration-200" style="transform: ${collapsed ? 'rotate(-90deg)' : 'rotate(0deg)'};" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"/>
+                                    </svg>
+                                </button>
+
+                                <button type="button" onclick="window.removeVector('${id}')" title="Delete Vector ${label}"
+                                    class="glass-btn w-6 h-6 rounded-lg flex items-center justify-center text-rose-400 hover:bg-rose-500/20 cursor-pointer">
+                                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M18 6 6 18M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Collapsible Controls Body -->
+                        <div id="card-body-${id}" class="space-y-2.5 ${collapsed ? 'hidden' : ''}">
+                            <!-- 1. Magnitude |F| -->
+                            <div class="space-y-1">
+                                <div class="flex items-center justify-between text-[11px]">
+                                    <span style="color: var(--text-secondary);">Magnitude |${label}| (N)</span>
+                                    <input type="number" id="num-mag-${id}" class="glass-num font-mono-num" min="0" max="2000" step="any" value="${mag}"
+                                        oninput="window.updateVectorParam('${id}', 'mag', this.value, 'number')">
+                                </div>
+                                <input type="range" id="rng-mag-${id}" class="liquid-slider" style="--slider-accent: ${color.hex};" min="0" max="2000" step="10" value="${mag}"
+                                    oninput="window.updateVectorParam('${id}', 'mag', this.value, 'range')">
+                            </div>
+
+                            <!-- 2. Elevation θ (dynamically labeled with active horizontal floor & vertical axis) -->
+                            <div class="space-y-1">
+                                <div class="flex items-center justify-between text-[11px]">
+                                    <span style="color: var(--text-secondary);">Elevation θ (from ${sys.floorLabel} → +${sys.upLabel})</span>
+                                    <div class="flex items-center gap-1">
+                                        <input type="number" id="num-elev-${id}" class="glass-num font-mono-num" min="-90" max="90" step="any" value="${elev}"
+                                            oninput="window.updateVectorParam('${id}', 'elev', this.value, 'number')">
+                                        <span class="text-[11px]" style="color: var(--text-muted);">°</span>
+                                    </div>
+                                </div>
+                                <input type="range" id="rng-elev-${id}" class="liquid-slider" style="--slider-accent: ${color.hex};" min="-90" max="90" step="1" value="${elev}"
+                                    oninput="window.updateVectorParam('${id}', 'elev', this.value, 'range')">
+                            </div>
+
+                            <!-- 3. Azimuth φ (dynamically labeled with active horizontal floor axes) -->
+                            <div class="space-y-1">
+                                <div class="flex items-center justify-between text-[11px]">
+                                    <span style="color: var(--text-secondary);">Azimuth φ (+${sys.h1Label} toward +${sys.h2Label})</span>
+                                    <div class="flex items-center gap-1">
+                                        <input type="number" id="num-azim-${id}" class="glass-num font-mono-num" min="0" max="360" step="any" value="${azim}"
+                                            oninput="window.updateVectorParam('${id}', 'azim', this.value, 'number')">
+                                        <span class="text-[11px]" style="color: var(--text-muted);">°</span>
+                                    </div>
+                                </div>
+                                <input type="range" id="rng-azim-${id}" class="liquid-slider" style="--slider-accent: ${color.hex};" min="0" max="360" step="1" value="${azim}"
+                                    oninput="window.updateVectorParam('${id}', 'azim', this.value, 'range')">
+                            </div>
+
+                            <!-- Live Cartesian Components Readout -->
+                            <div class="grid grid-cols-3 gap-1.5 pt-1">
+                                <div id="cell-fx-${id}" class="rounded-lg px-2 py-1.5 text-center" style="background: var(--input-bg); border: 1px solid var(--glass-border-subtle);">
+                                    <div class="text-[9px] font-semibold uppercase" style="color: var(--text-muted);">F<sub>x</sub></div>
+                                    <div id="comp-fx-${id}" class="font-mono-num text-[11px] font-semibold mt-0.5" style="color: var(--text-primary);">${components.x.toFixed(1)} N</div>
+                                </div>
+                                <div id="cell-fy-${id}" class="rounded-lg px-2 py-1.5 text-center" style="background: var(--input-bg); border: 1px solid var(--glass-border-subtle);">
+                                    <div class="text-[9px] font-semibold uppercase" style="color: var(--text-muted);">F<sub>y</sub></div>
+                                    <div id="comp-fy-${id}" class="font-mono-num text-[11px] font-semibold mt-0.5" style="color: var(--text-primary);">${components.y.toFixed(1)} N</div>
+                                </div>
+                                <div id="cell-fz-${id}" class="rounded-lg px-2 py-1.5 text-center" style="background: var(--input-bg); border: 1px solid var(--glass-border-subtle);">
+                                    <div class="text-[9px] font-semibold uppercase" style="color: var(--text-muted);">F<sub>z</sub></div>
+                                    <div id="comp-fz-${id}" class="font-mono-num text-[11px] font-semibold mt-0.5" style="color: var(--text-primary);">${components.z.toFixed(1)} N</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ---------------------------------------------------------------------
+        // RESULTANT PHYSICS & SUMMARY UI READOUT
+        // ---------------------------------------------------------------------
+        function updateResultantUI() {
+            let sumX = 0, sumY = 0, sumZ = 0;
+            state.vectors.forEach(v => {
+                sumX += v.components.x;
+                sumY += v.components.y;
+                sumZ += v.components.z;
+            });
+
+            const magR = Math.hypot(sumX, sumY, sumZ);
+
+            const sx = sumX.toFixed(1);
+            const sy = (sumY >= 0 ? '+ ' : '− ') + Math.abs(sumY).toFixed(1);
+            const sz = (sumZ >= 0 ? '+ ' : '− ') + Math.abs(sumZ).toFixed(1);
+
+            document.getElementById('res-equation').textContent = `${sx}i ${sy}j ${sz}k N`;
+            document.getElementById('res-magnitude').textContent = `${magR.toFixed(1)} N`;
+
+            if (magR > 0.05) {
+                const alpha = Math.acos(THREE.MathUtils.clamp(sumX / magR, -1, 1)) * RAD2DEG;
+                const beta  = Math.acos(THREE.MathUtils.clamp(sumY / magR, -1, 1)) * RAD2DEG;
+                const gamma = Math.acos(THREE.MathUtils.clamp(sumZ / magR, -1, 1)) * RAD2DEG;
+                document.getElementById('res-angles').textContent =
+                    `α ${alpha.toFixed(1)}° • β ${beta.toFixed(1)}° • γ ${gamma.toFixed(1)}°`;
+            } else {
+                document.getElementById('res-angles').textContent = '—';
+            }
+
+            if (resultantSpriteObj) {
+                resultantSpriteObj.redraw(`F_R: ${magR.toFixed(1)} N`, state.theme === 'dark');
+            }
+        }
+
+        // ---------------------------------------------------------------------
+        // UPDATE 3D TIP-TO-TAIL CHAIN & RESULTANT ARROW
+        // ---------------------------------------------------------------------
+        function updateResultantAndChain3D() {
+            const count = state.vectors.length;
+            const targetGrowth = (state.showResultant && count > 0) ? 1 : 0;
+            resultantGrowth += (targetGrowth - resultantGrowth) * 0.14;
+            if (Math.abs(targetGrowth - resultantGrowth) < 0.002) resultantGrowth = targetGrowth;
+
+            // Clear previous frame's dynamic chain line segments & joints
+            while (chainLinesGroup.children.length > 0) {
+                const child = chainLinesGroup.children[0];
+                child.geometry.dispose();
+                child.material.dispose();
+                chainLinesGroup.remove(child);
+            }
+            while (chainNodesGroup.children.length > 0) {
+                const node = chainNodesGroup.children[0];
+                node.geometry.dispose();
+                node.material.dispose();
+                chainNodesGroup.remove(node);
+            }
+
+            if (count === 0 || resultantGrowth < 0.01) {
+                resultantArrow.group.visible = false;
+                resultantSpriteObj.sprite.visible = false;
+                return;
+            }
+
+            // Compute cumulative sum of animated vectors
+            currentResultantVec.set(0, 0, 0);
+            const partialSums = [];
+            state.vectors.forEach(v => {
+                const scaledVec = v.currentSceneVec.clone().multiplyScalar(v.growth);
+                currentResultantVec.add(scaledVec);
+                partialSums.push(currentResultantVec.clone());
+            });
+
+            // Update Emerald Green Resultant Arrow
+            resultantArrow.update(currentResultantVec, resultantGrowth);
+
+            const animatedTipR = currentResultantVec.clone().multiplyScalar(resultantGrowth);
+            resultantSpriteObj.sprite.visible = resultantGrowth > 0.25 && currentResultantVec.length() > 0.05;
+            if (resultantSpriteObj.sprite.visible) {
+                const offset = animatedTipR.clone().normalize().multiplyScalar(0.95);
+                resultantSpriteObj.sprite.position.copy(animatedTipR).add(offset);
+                resultantSpriteObj.sprite.position.y += 0.4;
+                resultantSpriteObj.sprite.material.opacity = THREE.MathUtils.clamp((resultantGrowth - 0.2) / 0.65, 0, 1);
+            }
+
+            // Draw Dashed Tip-to-Tail Vector Addition Chain when >= 2 vectors exist
+            if (count >= 2 && resultantGrowth > 0.1) {
+                const lineOpacity = THREE.MathUtils.clamp((resultantGrowth - 0.1) / 0.8, 0, 0.88);
+
+                for (let i = 1; i < count; i++) {
+                    const pStart = partialSums[i - 1];
+                    const pEnd = partialSums[i];
+                    const vecColor = state.vectors[i].color.num;
+
+                    const geo = new THREE.BufferGeometry().setFromPoints([pStart, pEnd]);
+                    const mat = new THREE.LineDashedMaterial({
+                        color: vecColor,
+                        dashSize: 0.28,
+                        gapSize: 0.16,
+                        transparent: true,
+                        opacity: lineOpacity
+                    });
+                    const line = new THREE.Line(geo, mat);
+                    line.computeLineDistances();
+                    chainLinesGroup.add(line);
+
+                    // Small glowing joint sphere at intermediate tip-to-tail vertices
+                    if (i < count - 1) {
+                        const jointGeo = new THREE.SphereGeometry(0.11, 16, 16);
+                        const jointMat = new THREE.MeshBasicMaterial({
+                            color: 0x10b981,
+                            transparent: true,
+                            opacity: lineOpacity
+                        });
+                        const joint = new THREE.Mesh(jointGeo, jointMat);
+                        joint.position.copy(pEnd);
+                        chainNodesGroup.add(joint);
+                    }
+                }
+            }
+        }
+
+        // ---------------------------------------------------------------------
+        // THEME SYNCHRONIZATION (CSS + THREE.JS SCENE & SPRITES)
+        // ---------------------------------------------------------------------
+        function applyTheme(themeName, persist = true) {
+            state.theme = themeName;
+            const isDark = themeName === 'dark';
+            document.documentElement.setAttribute('data-theme', themeName);
+
+            if (persist) {
+                try { localStorage.setItem('vectorlab3d_theme', themeName); } catch (_) {}
+            }
+
+            if (!scene) return;
+
+            scene.fog = new THREE.FogExp2(isDark ? 0x060a12 : 0xecf2f9, 0.012);
+
+            ambientLight.intensity = isDark ? 0.78 : 0.98;
+            keyLight.intensity = isDark ? 0.95 : 0.75;
+            rimLight.intensity = isDark ? 0.55 : 0.35;
+
+            const posAxisHex = isDark ? 0x94a3b8 : 0x334155;
+            const negAxisHex = isDark ? 0x475569 : 0x94a3b8;
+            axisMaterials.forEach(item => {
+                item.mat.color.setHex(item.isPositive ? posAxisHex : negAxisHex);
+            });
+
+            // Re-render all axis sprite labels for crisp contrast
+            axisSprites.forEach(sp => sp.redraw(sp.text, isDark));
+
+            // Re-render active vector & resultant sprite labels
+            state.vectors.forEach(v => {
+                if (v.meshBundle) {
+                    v.meshBundle.triMat.opacity = isDark ? 0.16 : 0.18;
+                    v.meshBundle.spriteObj.redraw(`${v.label}: ${Math.round(v.mag)} N`, isDark);
+                }
+            });
+
+            if (resultantSpriteObj) {
+                resultantSpriteObj.redraw(resultantSpriteObj.text, isDark);
+            }
+
+            rebuildGrid(isDark);
+        }
+
+        window.toggleTheme = function () {
+            applyTheme(state.theme === 'dark' ? 'light' : 'dark', true);
+        };
+
+        // ---------------------------------------------------------------------
+        // CAMERA PRESETS, DOCK PILL & UI TOGGLES
+        // ---------------------------------------------------------------------
+        function positionDockPill(activeBtn) {
+            const pill = document.getElementById('dock-pill');
+            if (!pill || !activeBtn) return;
+            pill.style.width = `${activeBtn.offsetWidth}px`;
+            pill.style.transform = `translateX(${activeBtn.offsetLeft - 5}px)`;
+        }
+
+        window.setCameraPreset = function (presetName, btnEl) {
+            state.activeCameraPreset = presetName;
+            document.querySelectorAll('.dock-btn').forEach(b => b.classList.remove('active'));
+            if (btnEl) {
+                btnEl.classList.add('active');
+                positionDockPill(btnEl);
+            }
+
+            const preset = CAMERA_PRESETS[presetName] || CAMERA_PRESETS.isometric;
+            camAnim.active = true;
+            camAnim.startTime = performance.now();
+            camAnim.startPos.copy(camera.position);
+            camAnim.endPos.copy(preset.pos);
+            camAnim.startTarget.copy(controls.target);
+            camAnim.endTarget.copy(preset.target);
+        };
+
+        window.toggleAutoOrbit = function () {
+            state.autoOrbit = !state.autoOrbit;
+            controls.autoRotate = state.autoOrbit;
+            document.getElementById('btn-orbit').classList.toggle('active-state', state.autoOrbit);
+        };
+
+        window.toggleInspector = function () {
+            state.inspectorOpen = !state.inspectorOpen;
+            const panel = document.getElementById('inspector-panel');
+            panel.classList.toggle('collapsed', !state.inspectorOpen);
+            document.getElementById('btn-toggle-inspector').classList.toggle('active-state', state.inspectorOpen);
+            if (state.inspectorOpen) {
+                requestAnimationFrame(() => {
+                    positionAxisSegPill(document.querySelector('.axis-seg-btn.active'));
+                });
+            }
+        };
+
+        window.onToggleResultant = function (checked) {
+            state.showResultant = checked;
+        };
+
+        window.onToggleDisplay = function () {
+            state.showPlanes = document.getElementById('toggle-planes').checked;
+            state.showGrid   = document.getElementById('toggle-grid').checked;
+            if (gridHelper) gridHelper.visible = state.showGrid;
+        };
+
+        // ---------------------------------------------------------------------
+        // INITIALIZE THREE.JS SCENE & RENDER LOOP
+        // ---------------------------------------------------------------------
+        function init() {
+            const container = document.getElementById('viewport');
+
+            scene = new THREE.Scene();
+
+            camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 250);
+            camera.position.copy(CAMERA_PRESETS.isometric.pos);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.outputColorSpace = THREE.SRGBColorSpace;
+            container.appendChild(renderer.domElement);
+
+            // Smooth Damped OrbitControls
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.06;
+            controls.rotateSpeed = 0.8;
+            controls.zoomSpeed = 0.9;
+            controls.panSpeed = 0.75;
+            controls.minDistance = 6;
+            controls.maxDistance = 65;
+            controls.autoRotate = false;
+            controls.autoRotateSpeed = 1.15;
+            controls.target.copy(CAMERA_PRESETS.isometric.target);
+
+            // Cancel flight animation & pause Auto-Orbit on manual drag
+            controls.addEventListener('start', () => {
+                camAnim.active = false;
+                if (state.autoOrbit) {
+                    state.autoOrbit = false;
+                    controls.autoRotate = false;
+                    document.getElementById('btn-orbit').classList.remove('active-state');
+                }
+            });
+
+            // Studio Lighting
+            ambientLight = new THREE.AmbientLight(0xffffff, 0.78);
+            scene.add(ambientLight);
+
+            keyLight = new THREE.DirectionalLight(0xffffff, 0.95);
+            keyLight.position.set(14, 24, 18);
+            scene.add(keyLight);
+
+            rimLight = new THREE.DirectionalLight(0x7dd3fc, 0.55);
+            rimLight.position.set(-16, 10, -14);
+            scene.add(rimLight);
+
+            // Scene Layers
+            buildCoordinateSystem();
+
+            vectorsGroup = new THREE.Group();
+            scene.add(vectorsGroup);
+
+            resultantGroup = new THREE.Group();
+            scene.add(resultantGroup);
+
+            chainLinesGroup = new THREE.Group();
+            chainNodesGroup = new THREE.Group();
+            resultantGroup.add(chainLinesGroup, chainNodesGroup);
+
+            // Emerald Green Resultant Arrow & Label
+            resultantArrow = createArrowMesh(0x10b981, 0.125, 0.80, 0.30, resultantGroup);
+            resultantArrow.group.visible = false;
+
+            resultantSpriteObj = createTextSprite('F_R: 0.0 N', {
+                accentHex: '#10b981',
+                isAxis: false,
+                isDark: state.theme === 'dark'
+            });
+            resultantSpriteObj.sprite.visible = false;
+            resultantGroup.add(resultantSpriteObj.sprite);
+
+            // Restore Theme Preference
+            let savedTheme = 'dark';
+            try {
+                const stored = localStorage.getItem('vectorlab3d_theme');
+                if (stored === 'light' || stored === 'dark') savedTheme = stored;
+            } catch (_) {}
+            applyTheme(savedTheme, false);
+
+            // Start Completely Empty (0 / 10 Vectors)
+            renderVectorCards();
+            updateResultantUI();
+
+            // Inspector Drawer Initial State
+            const panel = document.getElementById('inspector-panel');
+            if (!state.inspectorOpen) {
+                panel.classList.add('collapsed');
+            } else {
+                document.getElementById('btn-toggle-inspector').classList.add('active-state');
+            }
+
+            requestAnimationFrame(() => {
+                positionDockPill(document.querySelector('.dock-btn.active'));
+                positionAxisSegPill(document.querySelector('.axis-seg-btn.active'));
+            });
+
+            window.addEventListener('resize', () => {
                 camera.aspect = window.innerWidth / window.innerHeight;
                 camera.updateProjectionMatrix();
                 renderer.setSize(window.innerWidth, window.innerHeight);
                 positionDockPill(document.querySelector('.dock-btn.active'));
+                positionAxisSegPill(document.querySelector('.axis-seg-btn.active'));
+            });
+        }
+
+        function easeOutCubic(t) {
+            return 1 - Math.pow(1 - t, 3);
+        }
+
+        function animate(now) {
+            requestAnimationFrame(animate);
+
+            // 1. Cubic-Eased Camera Preset Flight
+            if (camAnim.active) {
+                const rawT = Math.min(1, (now - camAnim.startTime) / camAnim.duration);
+                const easedT = easeOutCubic(rawT);
+                camera.position.lerpVectors(camAnim.startPos, camAnim.endPos, easedT);
+                controls.target.lerpVectors(camAnim.startTarget, camAnim.endTarget, easedT);
+                if (rawT >= 1) camAnim.active = false;
             }
 
-            // -----------------------------------------------------------------
-            // MAIN 60FPS ANIMATION LOOP (SPRING LERP + EASING)
-            // -----------------------------------------------------------------
-            const vecUp = new THREE.Vector3(0, 1, 0);
-            const vecPosX = new THREE.Vector3(1, 0, 0);
-            const vecPosZ = new THREE.Vector3(0, 0, 1);
-            const floorA = new THREE.Vector3();
-            const floorB = new THREE.Vector3();
-            const tipOffset = new THREE.Vector3();
+            // 2. Smoothly Interpolate 3D Coordinate Axes & Labels
+            updateCoordinateAxes3D();
 
-            function easeOutCubic(t) {
-                return 1 - Math.pow(1 - t, 3);
-            }
+            // 3. Smoothly Interpolate Each Active Vector & Spring-Grow Newly Added Ones
+            state.vectors.forEach(v => {
+                v.currentSceneVec.lerp(v.targetSceneVec, 0.16);
+                v.growth += (1 - v.growth) * 0.15;
+                if (Math.abs(1 - v.growth) < 0.002) v.growth = 1;
 
-            function animate(now) {
-                requestAnimationFrame(animate);
-
-                // 1. Smooth Cubic-Eased Camera Preset Transition
-                if (camAnim.active) {
-                    const elapsed = now - camAnim.startTime;
-                    const rawT = Math.min(1, elapsed / camAnim.duration);
-                    const easedT = easeOutCubic(rawT);
-
-                    camera.position.lerpVectors(camAnim.startPos, camAnim.endPos, easedT);
-                    controls.target.lerpVectors(camAnim.startTarget, camAnim.endTarget, easedT);
-
-                    if (rawT >= 1) camAnim.active = false;
+                if (v.meshBundle) {
+                    v.meshBundle.update(v.currentSceneVec, v.growth);
                 }
+            });
 
-                // 2. Smooth Spring/Lerp Interpolation for Vector A & B
-                const lerpFactor = 0.14;
-                currentA.lerp(targetA, lerpFactor);
-                currentB.lerp(targetB, lerpFactor);
-                currentR.addVectors(currentA, currentB);
+            // 4. Update Resultant Arrow & Tip-to-Tail Chain
+            updateResultantAndChain3D();
 
-                // 3. Smooth Resultant Growth / Shrink Animation
-                const targetRes = state.showResultant ? 1 : 0;
-                resultantProgress += (targetRes - resultantProgress) * 0.12;
-                if (Math.abs(targetRes - resultantProgress) < 0.002) resultantProgress = targetRes;
+            // 5. Update OrbitControls & Render
+            controls.update();
+            renderer.render(scene, camera);
+        }
 
-                // 4. Update 3D Arrows
-                arrowA.update(currentA, 1);
-                arrowB.update(currentB, 1);
-                arrowR.update(currentR, resultantProgress);
-
-                // Update Parallelogram Dashed Construction Lines
-                const paraOpacity = THREE.MathUtils.clamp((resultantProgress - 0.15) / 0.85, 0, 0.85);
-                const animatedTipR = tipOffset.copy(currentR).multiplyScalar(resultantProgress);
-                paraLine1.update(currentA, animatedTipR, paraOpacity);
-                paraLine2.update(currentB, animatedTipR, paraOpacity);
-
-                // 5. Update Vertical Projection Planes
-                planeAObj.update(currentA);
-                planeBObj.update(currentB);
-
-                // 6. Update Curved 3D Angle Arcs
-                floorA.set(currentA.x, 0, currentA.z);
-                floorB.set(currentB.x, 0, currentB.z);
-
-                const rA = Math.min(2.6, currentA.length() * 0.42);
-                const rB = Math.min(2.4, currentB.length() * 0.36);
-
-                labelMap.ang35.visible = arc35Obj.update(vecUp, currentA, rA);
-                labelMap.ang25.visible = arc25Obj.update(vecPosX, floorA, Math.min(2.7, floorA.length() * 0.65));
-                labelMap.ang65.visible = arc65Obj.update(floorB, currentB, rB);
-                labelMap.ang20.visible = arc20Obj.update(vecPosZ, floorB, Math.min(2.6, floorB.length() * 0.68));
-
-                // 7. Update Floating 3D HTML Label Anchor Positions
-                labelMap.vecA.pos.copy(currentA).add(new THREE.Vector3(0.15, 0.62, 0));
-                labelMap.vecB.pos.copy(currentB).add(new THREE.Vector3(-0.15, 0.62, 0));
-                labelMap.vecR.pos.copy(animatedTipR).add(new THREE.Vector3(0, 0.72, 0));
-
-                labelMap.ang35.pos.copy(arc35Obj.midpoint);
-                labelMap.ang25.pos.copy(arc25Obj.midpoint);
-                labelMap.ang65.pos.copy(arc65Obj.midpoint);
-                labelMap.ang20.pos.copy(arc20Obj.midpoint);
-
-                // 8. Update Controls, Render, and Project Labels
-                controls.update();
-                renderer.render(scene, camera);
-                updateLabelsScreenPositions();
-            }
-
-            // Start Application on Window Load
-            window.onload = function () {
-                bindControls();
-                initScene();
-                requestAnimationFrame(animate);
-            };
-        })();
+        window.addEventListener('DOMContentLoaded', () => {
+            init();
+            requestAnimationFrame(animate);
+        });
     </script>
 </body>
 </html>
