@@ -1,0 +1,1604 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VectorLab 3D — Engineering Force Vector Visualizer</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Three.js r128 + OrbitControls CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* =====================================================================
+           DESIGN TOKENS & LIQUID GLASS THEME SYSTEM (DARK & LIGHT MODES)
+           ===================================================================== */
+        :root {
+            --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+            --transition-theme: 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        /* Dark Mode: Deep Smoked Obsidian Liquid Glass */
+        html[data-theme="dark"] {
+            --bg-base: #070b14;
+            --bg-mesh-1: rgba(56, 189, 248, 0.14);
+            --bg-mesh-2: rgba(244, 63, 94, 0.11);
+            --bg-mesh-3: rgba(16, 185, 129, 0.10);
+
+            --glass-bg: linear-gradient(135deg, rgba(22, 30, 48, 0.68) 0%, rgba(12, 18, 30, 0.54) 100%);
+            --glass-bg-elevated: linear-gradient(135deg, rgba(30, 41, 64, 0.78) 0%, rgba(15, 23, 42, 0.64) 100%);
+            --glass-card: rgba(255, 255, 255, 0.04);
+            --glass-card-hover: rgba(255, 255, 255, 0.075);
+
+            --glass-border: rgba(255, 255, 255, 0.14);
+            --glass-border-subtle: rgba(255, 255, 255, 0.08);
+            --glass-specular: inset 0 1px 0 0 rgba(255, 255, 255, 0.22), inset 1px 0 0 0 rgba(255, 255, 255, 0.10);
+            --glass-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.65), 0 4px 16px -4px rgba(0, 0, 0, 0.45);
+
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+
+            --pill-bg: rgba(255, 255, 255, 0.13);
+            --pill-border: rgba(255, 255, 255, 0.22);
+            --input-bg: rgba(7, 11, 20, 0.55);
+            --track-bg: rgba(255, 255, 255, 0.12);
+            --divider: rgba(255, 255, 255, 0.09);
+
+            --label-bg: rgba(10, 15, 28, 0.72);
+            --label-border: rgba(255, 255, 255, 0.16);
+            --label-shadow: 0 4px 14px rgba(0, 0, 0, 0.55);
+            --axis-label-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+        }
+
+        /* Light Mode: Frosted Luminous Crystal White Liquid Glass */
+        html[data-theme="light"] {
+            --bg-base: #eef3f9;
+            --bg-mesh-1: rgba(56, 189, 248, 0.20);
+            --bg-mesh-2: rgba(244, 63, 94, 0.12);
+            --bg-mesh-3: rgba(16, 185, 129, 0.14);
+
+            --glass-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.76) 0%, rgba(244, 248, 255, 0.58) 100%);
+            --glass-bg-elevated: linear-gradient(135deg, rgba(255, 255, 255, 0.88) 0%, rgba(248, 250, 252, 0.72) 100%);
+            --glass-card: rgba(255, 255, 255, 0.56);
+            --glass-card-hover: rgba(255, 255, 255, 0.80);
+
+            --glass-border: rgba(255, 255, 255, 0.82);
+            --glass-border-subtle: rgba(15, 23, 42, 0.08);
+            --glass-specular: inset 0 1.5px 0 0 rgba(255, 255, 255, 0.95), inset 1px 0 0 0 rgba(255, 255, 255, 0.65);
+            --glass-shadow: 0 20px 44px -12px rgba(15, 23, 42, 0.14), 0 4px 16px -4px rgba(15, 23, 42, 0.06);
+
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #64748b;
+
+            --pill-bg: rgba(15, 23, 42, 0.08);
+            --pill-border: rgba(15, 23, 42, 0.10);
+            --input-bg: rgba(255, 255, 255, 0.75);
+            --track-bg: rgba(15, 23, 42, 0.12);
+            --divider: rgba(15, 23, 42, 0.08);
+
+            --label-bg: rgba(255, 255, 255, 0.82);
+            --label-border: rgba(15, 23, 42, 0.10);
+            --label-shadow: 0 4px 12px rgba(15, 23, 42, 0.10);
+            --axis-label-shadow: 0 1px 6px rgba(255, 255, 255, 0.95);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            transition: background-color var(--transition-theme), color var(--transition-theme);
+            user-select: none;
+        }
+
+        .font-mono-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Ambient Refractive Mesh Background behind the WebGL Canvas */
+        .ambient-mesh {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(circle at 16% 18%, var(--bg-mesh-1) 0%, transparent 46%),
+                radial-gradient(circle at 84% 24%, var(--bg-mesh-2) 0%, transparent 44%),
+                radial-gradient(circle at 52% 88%, var(--bg-mesh-3) 0%, transparent 50%);
+            transition: background var(--transition-theme);
+        }
+
+        /* Full-Viewport WebGL Container */
+        #viewport {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+            cursor: grab;
+        }
+        #viewport:active {
+            cursor: grabbing;
+        }
+        #viewport canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* =====================================================================
+           LIQUID GLASS SURFACE CLASSES
+           ===================================================================== */
+        .liquid-glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px) saturate(185%);
+            -webkit-backdrop-filter: blur(24px) saturate(185%);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-specular), var(--glass-shadow);
+            transition:
+                background var(--transition-theme),
+                border-color var(--transition-theme),
+                box-shadow var(--transition-theme),
+                transform 0.45s var(--ease-spring),
+                opacity 0.35s var(--ease-spring);
+        }
+
+        .glass-subcard {
+            background: var(--glass-card);
+            border: 1px solid var(--glass-border-subtle);
+            transition: background 0.25s ease, border-color 0.25s ease;
+        }
+        .glass-subcard:hover {
+            background: var(--glass-card-hover);
+        }
+
+        .glass-btn {
+            background: var(--glass-card);
+            border: 1px solid var(--glass-border-subtle);
+            color: var(--text-primary);
+            transition: all 0.28s var(--ease-spring);
+        }
+        .glass-btn:hover {
+            background: var(--pill-bg);
+            border-color: var(--pill-border);
+            transform: translateY(-1px);
+        }
+        .glass-btn:active {
+            transform: scale(0.96);
+        }
+        .glass-btn.active-state {
+            background: rgba(56, 189, 248, 0.20);
+            border-color: rgba(56, 189, 248, 0.55);
+            color: #38bdf8;
+        }
+        html[data-theme="light"] .glass-btn.active-state {
+            background: rgba(2, 132, 199, 0.14);
+            border-color: rgba(2, 132, 199, 0.45);
+            color: #0284c7;
+        }
+
+        /* =====================================================================
+           FLOATING 3D PROJECTED HTML LABELS
+           ===================================================================== */
+        #labels-layer {
+            position: fixed;
+            inset: 0;
+            z-index: 2;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .label-3d {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            white-space: nowrap;
+            pointer-events: none;
+            will-change: left, top, opacity;
+            transition: opacity 0.2s ease, background-color var(--transition-theme), color var(--transition-theme), border-color var(--transition-theme);
+        }
+
+        .label-pill {
+            padding: 3px 9px;
+            border-radius: 999px;
+            background: var(--label-bg);
+            border: 1px solid var(--label-border);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: var(--label-shadow);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+
+        .label-angle {
+            padding: 2px 7px;
+            border-radius: 8px;
+            background: var(--label-bg);
+            border: 1px solid var(--label-border);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-primary);
+            box-shadow: var(--label-shadow);
+        }
+
+        .label-axis {
+            font-family: 'Inter', serif;
+            font-style: italic;
+            font-weight: 700;
+            font-size: 15px;
+            color: var(--text-primary);
+            text-shadow: var(--axis-label-shadow);
+        }
+
+        /* =====================================================================
+           CUSTOM LIQUID RANGE SLIDERS & NUMERIC INPUTS
+           ===================================================================== */
+        input[type="range"].liquid-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 999px;
+            background: var(--track-bg);
+            outline: none;
+            cursor: pointer;
+            transition: background 0.25s ease;
+        }
+
+        input[type="range"].liquid-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--slider-accent, #38bdf8);
+            border: 2.5px solid #ffffff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.32);
+            cursor: pointer;
+            transition: transform 0.2s var(--ease-spring), box-shadow 0.2s ease;
+        }
+        input[type="range"].liquid-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.18);
+            box-shadow: 0 0 0 5px rgba(56, 189, 248, 0.18), 0 2px 10px rgba(0, 0, 0, 0.35);
+        }
+        input[type="range"].liquid-slider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--slider-accent, #38bdf8);
+            border: 2.5px solid #ffffff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.32);
+            cursor: pointer;
+            transition: transform 0.2s var(--ease-spring);
+        }
+
+        input[type="number"].glass-num {
+            background: var(--input-bg);
+            border: 1px solid var(--glass-border-subtle);
+            color: var(--text-primary);
+            border-radius: 8px;
+            padding: 3px 6px;
+            font-size: 12px;
+            font-weight: 600;
+            text-align: right;
+            width: 62px;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        input[type="number"].glass-num:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18);
+        }
+        /* Hide number spinners */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* =====================================================================
+           APPLE-STYLE LIQUID TOGGLE SWITCH
+           ===================================================================== */
+        .switch-track {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            border-radius: 999px;
+            background: var(--track-bg);
+            border: 1px solid var(--glass-border-subtle);
+            cursor: pointer;
+            transition: background 0.3s var(--ease-spring), border-color 0.3s ease;
+            flex-shrink: 0;
+        }
+        .switch-thumb {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #ffffff;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28);
+            transition: transform 0.35s var(--ease-spring);
+        }
+        input:checked + .switch-track {
+            background: var(--switch-color, #10b981);
+            border-color: transparent;
+        }
+        input:checked + .switch-track .switch-thumb {
+            transform: translateX(20px);
+        }
+
+        /* =====================================================================
+           INSPECTOR COLLAPSE ANIMATION & CUSTOM SCROLLBAR
+           ===================================================================== */
+        #inspector-panel {
+            transition: transform 0.5s var(--ease-spring), opacity 0.4s var(--ease-spring);
+        }
+        #inspector-panel.collapsed {
+            transform: translateX(calc(100% + 28px));
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .inspector-scroll::-webkit-scrollbar {
+            width: 5px;
+        }
+        .inspector-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .inspector-scroll::-webkit-scrollbar-thumb {
+            background: var(--track-bg);
+            border-radius: 999px;
+        }
+
+        /* =====================================================================
+           CAMERA DOCK SLIDING PILL INDICATOR
+           ===================================================================== */
+        #dock-pill {
+            position: absolute;
+            top: 5px;
+            bottom: 5px;
+            left: 5px;
+            border-radius: 999px;
+            background: var(--pill-bg);
+            border: 1px solid var(--pill-border);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 2px 8px rgba(0, 0, 0, 0.12);
+            transition: transform 0.42s var(--ease-spring), width 0.42s var(--ease-spring);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .dock-btn {
+            position: relative;
+            z-index: 1;
+            color: var(--text-secondary);
+            transition: color 0.25s ease;
+        }
+        .dock-btn.active {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* Theme Icon Rotation Animation */
+        .theme-icon {
+            transition: transform 0.5s var(--ease-spring), opacity 0.3s ease;
+        }
+        html[data-theme="dark"] .icon-sun {
+            opacity: 1;
+            transform: rotate(0deg) scale(1);
+        }
+        html[data-theme="dark"] .icon-moon {
+            opacity: 0;
+            transform: rotate(-90deg) scale(0.5);
+        }
+        html[data-theme="light"] .icon-sun {
+            opacity: 0;
+            transform: rotate(90deg) scale(0.5);
+        }
+        html[data-theme="light"] .icon-moon {
+            opacity: 1;
+            transform: rotate(0deg) scale(1);
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 640px) {
+            #inspector-panel {
+                width: calc(100vw - 24px) !important;
+                max-height: 70vh !important;
+                top: 76px !important;
+                right: 12px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Subtle Ambient Refractive Gradient Mesh -->
+    <div class="ambient-mesh" aria-hidden="true"></div>
+
+    <!-- Full-Viewport 3D WebGL Canvas -->
+    <div id="viewport" role="application" aria-label="Interactive 3D Force Vector Scene"></div>
+
+    <!-- Floating 2D Projected 3D Labels -->
+    <div id="labels-layer" aria-hidden="true"></div>
+
+    <!-- =====================================================================
+         1. TOP FLOATING LIQUID GLASS HEADER BAR
+         ===================================================================== -->
+    <header class="fixed top-3.5 left-3.5 right-3.5 sm:right-auto z-30 flex items-center justify-between sm:justify-start gap-2 sm:gap-3 liquid-glass rounded-2xl px-3 sm:px-4 py-2">
+        <!-- Brand Logo & Title -->
+        <div class="flex items-center gap-2.5 pr-1 sm:pr-2">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-br from-sky-400 via-blue-500 to-indigo-600 shadow-lg shadow-sky-500/25 shrink-0">
+                <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 3v9l7.5 4.3"/>
+                    <path d="M12 12L4.5 16.3"/>
+                    <path d="M12 3l-2.5 2.5M12 3l2.5 2.5"/>
+                    <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+                </svg>
+            </div>
+            <div class="leading-tight">
+                <h1 class="text-sm sm:text-[15px] font-bold tracking-tight" style="color: var(--text-primary);">VectorLab 3D</h1>
+                <p class="text-[11px] font-medium hidden xs:block sm:block" style="color: var(--text-secondary);">3D Statics Force Visualizer</p>
+            </div>
+        </div>
+
+        <div class="h-6 w-px hidden sm:block" style="background: var(--divider);"></div>
+
+        <!-- Quick Action Buttons -->
+        <div class="flex items-center gap-1.5 sm:gap-2">
+            <!-- Reset Textbook Preset -->
+            <button id="btn-reset" onclick="resetTextbookDefaults()" title="Reset to Textbook Problem (750 N & 900 N)"
+                class="glass-btn px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                    <path d="M3 3v5h5"/>
+                </svg>
+                <span class="hidden md:inline">Reset Textbook</span>
+            </button>
+
+            <!-- Auto-Orbit Toggle -->
+            <button id="btn-orbit" onclick="toggleAutoOrbit()" title="Toggle Gentle Auto-Orbit"
+                class="glass-btn px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="9" stroke-dasharray="4 3"/>
+                    <path d="M12 3a9 9 0 0 1 9 9"/>
+                    <circle cx="12" cy="12" r="2" fill="currentColor"/>
+                </svg>
+                <span class="hidden md:inline">Auto-Orbit</span>
+            </button>
+
+            <!-- Animated Light / Dark Mode Toggle -->
+            <button id="btn-theme" onclick="toggleTheme()" title="Switch Light / Dark Mode" aria-label="Toggle Light and Dark Mode"
+                class="glass-btn relative w-9 h-8 rounded-xl flex items-center justify-center cursor-pointer overflow-hidden">
+                <!-- Sun Icon (shown in Dark Mode to switch to Light) -->
+                <svg class="theme-icon icon-sun w-4 h-4 text-amber-400 absolute" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="4"/>
+                    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+                </svg>
+                <!-- Moon Icon (shown in Light Mode to switch to Dark) -->
+                <svg class="theme-icon icon-moon w-4 h-4 text-indigo-600 absolute" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+                </svg>
+            </button>
+
+            <!-- Inspector Panel Toggle Button -->
+            <button id="btn-toggle-inspector" onclick="toggleInspector()" title="Toggle Inspector Panel" aria-label="Toggle Inspector Panel"
+                class="glass-btn px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 cursor-pointer sm:ml-0.5">
+                <svg id="inspector-icon" class="w-4 h-4 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="3"/>
+                    <path d="M15 3v18"/>
+                </svg>
+                <span class="hidden sm:inline">Inspector</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Subtle Hint Badge (Bottom Left on Desktop) -->
+    <div class="fixed bottom-4 left-4 z-20 hidden lg:flex items-center gap-2 liquid-glass rounded-full px-3.5 py-1.5 text-[11px] font-medium pointer-events-none" style="color: var(--text-secondary);">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span>Drag to orbit • Scroll to zoom • Right-drag to pan</span>
+    </div>
+
+    <!-- =====================================================================
+         2. RIGHT-SIDE COLLAPSIBLE LIQUID GLASS INSPECTOR PANEL
+         ===================================================================== -->
+    <aside id="inspector-panel"
+        class="fixed top-4 right-4 z-30 w-[356px] max-h-[calc(100vh-32px)] liquid-glass rounded-3xl flex flex-col overflow-hidden">
+
+        <!-- Inspector Header -->
+        <div class="px-5 pt-4 pb-3 flex items-center justify-between shrink-0" style="border-bottom: 1px solid var(--divider);">
+            <div>
+                <h2 class="text-xs font-bold uppercase tracking-wider" style="color: var(--text-secondary);">Force Inspector</h2>
+                <p class="text-[11px] mt-0.5" style="color: var(--text-muted);">Live 3D Cartesian Decomposition</p>
+            </div>
+            <button onclick="toggleInspector()" class="glass-btn w-7 h-7 rounded-full flex items-center justify-center cursor-pointer" title="Collapse Panel">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 6 6 18M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Scrollable Content -->
+        <div class="inspector-scroll overflow-y-auto px-4 py-3.5 space-y-3.5 flex-1">
+
+            <!-- Resultant Force Toggle Card -->
+            <div class="glass-subcard rounded-2xl p-3.5 relative overflow-hidden">
+                <div class="flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-2.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.7)] shrink-0"></span>
+                        <div>
+                            <div class="text-xs font-bold" style="color: var(--text-primary);">Resultant Force (F<sub>R</sub> = A + B)</div>
+                            <div class="text-[11px]" style="color: var(--text-secondary);">3D parallelogram & resultant vector</div>
+                        </div>
+                    </div>
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="toggle-resultant" class="sr-only" onchange="onToggleResultant(this.checked)">
+                        <div class="switch-track" style="--switch-color: #10b981;">
+                            <div class="switch-thumb"></div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Vector A Controls -->
+            <div class="glass-subcard rounded-2xl p-3.5 space-y-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.65)]"></span>
+                        <h3 class="text-xs font-bold tracking-tight" style="color: var(--text-primary);">Vector A</h3>
+                    </div>
+                    <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/25">From +y & +x</span>
+                </div>
+
+                <!-- Magnitude A -->
+                <div class="space-y-1">
+                    <div class="flex items-center justify-between text-[11px]">
+                        <span style="color: var(--text-secondary);">Magnitude |A| (N)</span>
+                        <input type="number" id="num-a-mag" class="glass-num font-mono-num" min="100" max="1500" step="10" value="750">
+                    </div>
+                    <input type="range" id="rng-a-mag" class="liquid-slider" style="--slider-accent: #f43f5e;" min="100" max="1500" step="5" value="750">
+                </div>
+
+                <!-- Vertical Angle theta_y -->
+                <div class="space-y-1">
+                    <div class="flex items-center justify-between text-[11px]">
+                        <span style="color: var(--text-secondary);">Vertical Angle θ<sub>y</sub> (from +y)</span>
+                        <div class="flex items-center gap-1">
+                            <input type="number" id="num-a-theta" class="glass-num font-mono-num" min="1" max="89" step="1" value="35">
+                            <span class="text-[11px]" style="color: var(--text-muted);">°</span>
+                        </div>
+                    </div>
+                    <input type="range" id="rng-a-theta" class="liquid-slider" style="--slider-accent: #f43f5e;" min="1" max="89" step="1" value="35">
+                </div>
+
+                <!-- Azimuth Angle phi_x -->
+                <div class="space-y-1">
+                    <div class="flex items-center justify-between text-[11px]">
+                        <span style="color: var(--text-secondary);">Azimuth φ<sub>x</sub> (+x toward +z)</span>
+                        <div class="flex items-center gap-1">
+                            <input type="number" id="num-a-phi" class="glass-num font-mono-num" min="-85" max="85" step="1" value="25">
+                            <span class="text-[11px]" style="color: var(--text-muted);">°</span>
+                        </div>
+                    </div>
+                    <input type="range" id="rng-a-phi" class="liquid-slider" style="--slider-accent: #f43f5e;" min="-85" max="85" step="1" value="25">
+                </div>
+            </div>
+
+            <!-- Vector B Controls -->
+            <div class="glass-subcard rounded-2xl p-3.5 space-y-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.65)]"></span>
+                        <h3 class="text-xs font-bold tracking-tight" style="color: var(--text-primary);">Vector B</h3>
+                    </div>
+                    <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-orange-500/15 text-orange-400 border border-orange-500/25">Above xz & +z</span>
+                </div>
+
+                <!-- Magnitude B -->
+                <div class="space-y-1">
+                    <div class="flex items-center justify-between text-[11px]">
+                        <span style="color: var(--text-secondary);">Magnitude |B| (N)</span>
+                        <input type="number" id="num-b-mag" class="glass-num font-mono-num" min="100" max="1500" step="10" value="900">
+                    </div>
+                    <input type="range" id="rng-b-mag" class="liquid-slider" style="--slider-accent: #f97316;" min="100" max="1500" step="5" value="900">
+                </div>
+
+                <!-- Elevation Angle above xz -->
+                <div class="space-y-1">
+                    <div class="flex items-center justify-between text-[11px]">
+                        <span style="color: var(--text-secondary);">Elevation θ<sub>xz</sub> (above xz)</span>
+                        <div class="flex items-center gap-1">
+                            <input type="number" id="num-b-elev" class="glass-num font-mono-num" min="1" max="89" step="1" value="65">
+                            <span class="text-[11px]" style="color: var(--text-muted);">°</span>
+                        </div>
+                    </div>
+                    <input type="range" id="rng-b-elev" class="liquid-slider" style="--slider-accent: #f97316;" min="1" max="89" step="1" value="65">
+                </div>
+
+                <!-- Horizontal Angle from +z toward -x -->
+                <div class="space-y-1">
+                    <div class="flex items-center justify-between text-[11px]">
+                        <span style="color: var(--text-secondary);">Azimuth φ<sub>z</sub> (+z toward −x)</span>
+                        <div class="flex items-center gap-1">
+                            <input type="number" id="num-b-phi" class="glass-num font-mono-num" min="-85" max="85" step="1" value="20">
+                            <span class="text-[11px]" style="color: var(--text-muted);">°</span>
+                        </div>
+                    </div>
+                    <input type="range" id="rng-b-phi" class="liquid-slider" style="--slider-accent: #f97316;" min="-85" max="85" step="1" value="20">
+                </div>
+            </div>
+
+            <!-- Live Mathematical Breakdown Card -->
+            <div class="glass-subcard rounded-2xl p-3.5 space-y-2.5">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xs font-bold tracking-tight" style="color: var(--text-primary);">Cartesian Breakdown</h3>
+                    <span class="text-[10px] font-mono-num font-medium" style="color: var(--text-muted);">Newtons (N)</span>
+                </div>
+
+                <!-- Vector A Components -->
+                <div class="rounded-xl p-2.5 text-[11px] font-mono-num leading-relaxed" style="background: var(--input-bg); border: 1px solid var(--glass-border-subtle);">
+                    <div class="flex items-center justify-between mb-0.5">
+                        <span class="font-bold text-rose-400">A</span>
+                        <span id="math-a-vec" style="color: var(--text-primary);">389.9i + 614.4j + 181.8k</span>
+                    </div>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span class="font-bold text-orange-400">B</span>
+                        <span id="math-b-vec" style="color: var(--text-primary);">-130.1i + 815.7j + 357.4k</span>
+                    </div>
+                    <div class="pt-1.5 flex items-center justify-between" style="border-top: 1px dashed var(--divider);">
+                        <span class="font-bold text-emerald-400">F<sub>R</sub></span>
+                        <span id="math-r-vec" class="font-semibold text-emerald-400">259.8i + 1430.0j + 539.2k</span>
+                    </div>
+                </div>
+
+                <!-- Resultant Magnitude & Coordinate Direction Angles -->
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="rounded-xl p-2.5" style="background: var(--input-bg); border: 1px solid var(--glass-border-subtle);">
+                        <div class="text-[10px] font-medium" style="color: var(--text-secondary);">Magnitude |F<sub>R</sub>|</div>
+                        <div id="math-r-mag" class="font-mono-num text-sm font-bold text-emerald-400 mt-0.5">1550.2 N</div>
+                    </div>
+                    <div class="rounded-xl p-2.5" style="background: var(--input-bg); border: 1px solid var(--glass-border-subtle);">
+                        <div class="text-[10px] font-medium" style="color: var(--text-secondary);">Direction Angles</div>
+                        <div id="math-r-angles" class="font-mono-num text-[11px] font-semibold mt-1 leading-tight" style="color: var(--text-primary);">
+                            α 80.4° • β 22.7° • γ 69.7°
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visual Display Toggles -->
+            <div class="glass-subcard rounded-2xl p-3.5 space-y-2.5">
+                <h3 class="text-xs font-bold tracking-tight" style="color: var(--text-primary);">Display Layers</h3>
+
+                <label class="flex items-center justify-between cursor-pointer text-xs">
+                    <span style="color: var(--text-secondary);">Vertical Projection Planes</span>
+                    <input type="checkbox" id="toggle-planes" checked class="sr-only" onchange="onToggleDisplay()">
+                    <div class="switch-track" style="--switch-color: #38bdf8;">
+                        <div class="switch-thumb"></div>
+                    </div>
+                </label>
+
+                <label class="flex items-center justify-between cursor-pointer text-xs">
+                    <span style="color: var(--text-secondary);">Angle Arcs & Labels</span>
+                    <input type="checkbox" id="toggle-arcs" checked class="sr-only" onchange="onToggleDisplay()">
+                    <div class="switch-track" style="--switch-color: #38bdf8;">
+                        <div class="switch-thumb"></div>
+                    </div>
+                </label>
+
+                <label class="flex items-center justify-between cursor-pointer text-xs">
+                    <span style="color: var(--text-secondary);">Coordinate Grid (XZ)</span>
+                    <input type="checkbox" id="toggle-grid" checked class="sr-only" onchange="onToggleDisplay()">
+                    <div class="switch-track" style="--switch-color: #38bdf8;">
+                        <div class="switch-thumb"></div>
+                    </div>
+                </label>
+            </div>
+        </div>
+    </aside>
+
+    <!-- =====================================================================
+         3. BOTTOM-CENTER FLOATING LIQUID GLASS CAMERA DOCK
+         ===================================================================== -->
+    <nav id="camera-dock" aria-label="Camera Presets"
+        class="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 liquid-glass rounded-full p-1.5 flex items-center gap-0.5 sm:gap-1 max-w-[94vw]">
+        <div id="dock-pill"></div>
+        <button class="dock-btn active px-3 sm:px-4 py-1.5 rounded-full text-[11px] sm:text-xs cursor-pointer whitespace-nowrap" data-preset="textbook" onclick="setCameraPreset('textbook', this)">
+            Textbook View
+        </button>
+        <button class="dock-btn px-3 sm:px-4 py-1.5 rounded-full text-[11px] sm:text-xs cursor-pointer whitespace-nowrap" data-preset="top" onclick="setCameraPreset('top', this)">
+            Top (XZ)
+        </button>
+        <button class="dock-btn px-3 sm:px-4 py-1.5 rounded-full text-[11px] sm:text-xs cursor-pointer whitespace-nowrap" data-preset="front" onclick="setCameraPreset('front', this)">
+            Front (XY)
+        </button>
+        <button class="dock-btn px-3 sm:px-4 py-1.5 rounded-full text-[11px] sm:text-xs cursor-pointer whitespace-nowrap" data-preset="side" onclick="setCameraPreset('side', this)">
+            Side (YZ)
+        </button>
+    </nav>
+
+    <!-- =====================================================================
+         THREE.JS ENGINE & APPLICATION LOGIC
+         ===================================================================== -->
+    <script>
+        (function () {
+            'use strict';
+
+            // -----------------------------------------------------------------
+            // CONSTANTS & APPLICATION STATE
+            // -----------------------------------------------------------------
+            const SCALE = 0.01; // 100 N = 1.0 Three.js unit
+            const DEG2RAD = Math.PI / 180;
+            const RAD2DEG = 180 / Math.PI;
+
+            const TEXTBOOK_DEFAULTS = {
+                aMag: 750, aTheta: 35, aPhi: 25,
+                bMag: 900, bElev: 65, bPhi: 20
+            };
+
+            const state = {
+                ...TEXTBOOK_DEFAULTS,
+                showResultant: false,
+                showPlanes: true,
+                showArcs: true,
+                showGrid: true,
+                autoOrbit: false,
+                theme: 'dark',
+                inspectorOpen: window.innerWidth >= 900
+            };
+
+            // 3D Scene Core
+            let scene, camera, renderer, controls;
+            let ambientLight, keyLight, rimLight;
+            let gridHelper = null;
+            let axisObjects = [];
+            let planeMeshes = [];
+
+            // Smoothly Interpolated Vector Targets & Current Values (in scene units)
+            const targetA = new THREE.Vector3();
+            const targetB = new THREE.Vector3();
+            const currentA = new THREE.Vector3();
+            const currentB = new THREE.Vector3();
+            const currentR = new THREE.Vector3();
+
+            // Smooth Resultant Growth Animation (0 = hidden, 1 = full length)
+            let resultantProgress = 0;
+
+            // Camera Preset Smooth Cubic Interpolation
+            const camAnim = {
+                active: false,
+                startTime: 0,
+                duration: 850,
+                startPos: new THREE.Vector3(),
+                endPos: new THREE.Vector3(),
+                startTarget: new THREE.Vector3(),
+                endTarget: new THREE.Vector3()
+            };
+
+            // Dynamic 3D Visual Groups & Reusable Handles
+            let arrowA, arrowB, arrowR;
+            let planesGroup, arcsGroup, resultantGroup;
+            let planeAObj, planeBObj;
+            let arc35Obj, arc25Obj, arc65Obj, arc20Obj;
+            let paraLine1, paraLine2;
+
+            // Floating HTML Labels Registry
+            const labelsLayer = document.getElementById('labels-layer');
+            const labelMap = {};
+
+            // -----------------------------------------------------------------
+            // VECTOR PHYSICS CALCULATIONS (EXACT ENGINEERING STATICS)
+            // -----------------------------------------------------------------
+            function computeVectorA(mag, thetaYDeg, phiXDeg) {
+                const ty = thetaYDeg * DEG2RAD;
+                const px = phiXDeg * DEG2RAD;
+                const fy = mag * Math.cos(ty);
+                const fxz = mag * Math.sin(ty);
+                const fx = fxz * Math.cos(px);
+                const fz = fxz * Math.sin(px);
+                return { x: fx, y: fy, z: fz };
+            }
+
+            function computeVectorB(mag, elevDeg, phiZDeg) {
+                const el = elevDeg * DEG2RAD;
+                const pz = phiZDeg * DEG2RAD;
+                const fy = mag * Math.sin(el);
+                const fxz = mag * Math.cos(el);
+                const fx = -fxz * Math.sin(pz);
+                const fz = fxz * Math.cos(pz);
+                return { x: fx, y: fy, z: fz };
+            }
+
+            function updateMathAndTargets(instant = false) {
+                const aN = computeVectorA(state.aMag, state.aTheta, state.aPhi);
+                const bN = computeVectorB(state.bMag, state.bElev, state.bPhi);
+                const rN = { x: aN.x + bN.x, y: aN.y + bN.y, z: aN.z + bN.z };
+
+                // Set Three.js scene targets (scaled 100 N -> 1 unit)
+                targetA.set(aN.x * SCALE, aN.y * SCALE, aN.z * SCALE);
+                targetB.set(bN.x * SCALE, bN.y * SCALE, bN.z * SCALE);
+
+                if (instant) {
+                    currentA.copy(targetA);
+                    currentB.copy(targetB);
+                }
+
+                // Resultant Magnitude & Coordinate Direction Angles
+                const rMag = Math.hypot(rN.x, rN.y, rN.z);
+                const alpha = rMag > 0.001 ? Math.acos(THREE.MathUtils.clamp(rN.x / rMag, -1, 1)) * RAD2DEG : 0;
+                const beta  = rMag > 0.001 ? Math.acos(THREE.MathUtils.clamp(rN.y / rMag, -1, 1)) * RAD2DEG : 0;
+                const gamma = rMag > 0.001 ? Math.acos(THREE.MathUtils.clamp(rN.z / rMag, -1, 1)) * RAD2DEG : 0;
+
+                // Format Cartesian i, j, k strings cleanly
+                const fmt = (x, y, z) => {
+                    const sx = x.toFixed(1);
+                    const sy = (y >= 0 ? '+ ' : '− ') + Math.abs(y).toFixed(1);
+                    const sz = (z >= 0 ? '+ ' : '− ') + Math.abs(z).toFixed(1);
+                    return `${sx}i ${sy}j ${sz}k`;
+                };
+
+                document.getElementById('math-a-vec').textContent = fmt(aN.x, aN.y, aN.z);
+                document.getElementById('math-b-vec').textContent = fmt(bN.x, bN.y, bN.z);
+                document.getElementById('math-r-vec').textContent = fmt(rN.x, rN.y, rN.z);
+                document.getElementById('math-r-mag').textContent = `${rMag.toFixed(1)} N`;
+                document.getElementById('math-r-angles').textContent =
+                    `α ${alpha.toFixed(1)}° • β ${beta.toFixed(1)}° • γ ${gamma.toFixed(1)}°`;
+
+                // Update dynamic 3D label text
+                if (labelMap.vecA) labelMap.vecA.el.textContent = `A = ${Math.round(state.aMag)} N`;
+                if (labelMap.vecB) labelMap.vecB.el.textContent = `B = ${Math.round(state.bMag)} N`;
+                if (labelMap.vecR) labelMap.vecR.el.textContent = `F_R = ${rMag.toFixed(1)} N`;
+                if (labelMap.ang35) labelMap.ang35.el.textContent = `${Math.round(state.aTheta)}°`;
+                if (labelMap.ang25) labelMap.ang25.el.textContent = `${Math.abs(Math.round(state.aPhi))}°`;
+                if (labelMap.ang65) labelMap.ang65.el.textContent = `${Math.round(state.bElev)}°`;
+                if (labelMap.ang20) labelMap.ang20.el.textContent = `${Math.abs(Math.round(state.bPhi))}°`;
+            }
+
+            // -----------------------------------------------------------------
+            // REUSABLE 3D ARROW BUILDER (SMOOTH ZERO-ALLOCATION UPDATES)
+            // -----------------------------------------------------------------
+            function createDynamicArrow(colorHex, shaftRadius, headLength, headRadius, parent) {
+                const group = new THREE.Group();
+                const mat = new THREE.MeshPhysicalMaterial({
+                    color: colorHex,
+                    roughness: 0.25,
+                    metalness: 0.15,
+                    clearcoat: 0.55,
+                    clearcoatRoughness: 0.2
+                });
+
+                // Unit-length cylinder along +Y (scaled dynamically per frame)
+                const shaftGeo = new THREE.CylinderGeometry(shaftRadius, shaftRadius, 1, 24);
+                shaftGeo.translate(0, 0.5, 0);
+                const shaft = new THREE.Mesh(shaftGeo, mat);
+
+                const headGeo = new THREE.ConeGeometry(headRadius, headLength, 28);
+                headGeo.translate(0, headLength * 0.5, 0);
+                const head = new THREE.Mesh(headGeo, mat);
+
+                group.add(shaft, head);
+                parent.add(group);
+
+                const upAxis = new THREE.Vector3(0, 1, 0);
+                const dir = new THREE.Vector3();
+
+                return {
+                    group,
+                    material: mat,
+                    update(tipVec, scaleFactor = 1) {
+                        const len = tipVec.length() * scaleFactor;
+                        if (len < 0.02) {
+                            group.visible = false;
+                            return;
+                        }
+                        group.visible = true;
+                        dir.copy(tipVec).normalize();
+                        group.quaternion.setFromUnitVectors(upAxis, dir);
+
+                        const effHeadLen = Math.min(headLength, len * 0.45);
+                        const headScale = effHeadLen / headLength;
+                        const shaftLen = Math.max(0.001, len - effHeadLen);
+
+                        shaft.scale.set(1, shaftLen, 1);
+                        head.scale.set(headScale, headScale, headScale);
+                        head.position.set(0, shaftLen, 0);
+                    }
+                };
+            }
+
+            // -----------------------------------------------------------------
+            // DYNAMIC VERTICAL PROJECTION PLANE + DASHED DROP LINE
+            // -----------------------------------------------------------------
+            function createDynamicProjectionPlane(parent) {
+                // Triangle Mesh: Origin -> Floor(x,0,z) -> Tip(x,y,z)
+                const triGeo = new THREE.BufferGeometry();
+                const positions = new Float32Array(9);
+                triGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+                const triMat = new THREE.MeshBasicMaterial({
+                    color: 0x38bdf8,
+                    transparent: true,
+                    opacity: 0.18,
+                    side: THREE.DoubleSide,
+                    depthWrite: false
+                });
+                const mesh = new THREE.Mesh(triGeo, triMat);
+                parent.add(mesh);
+                planeMeshes.push(triMat);
+
+                // Solid Floor Projection Line: Origin -> Floor(x,0,z)
+                const floorGeo = new THREE.BufferGeometry();
+                floorGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6), 3));
+                const floorMat = new THREE.LineBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.85 });
+                const floorLine = new THREE.Line(floorGeo, floorMat);
+                parent.add(floorLine);
+
+                // Crisp Dashed Vertical Drop Line: Floor(x,0,z) -> Tip(x,y,z)
+                const dropGeo = new THREE.BufferGeometry();
+                dropGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6), 3));
+                const dropMat = new THREE.LineDashedMaterial({
+                    color: 0x38bdf8,
+                    dashSize: 0.24,
+                    gapSize: 0.15,
+                    transparent: true,
+                    opacity: 0.9
+                });
+                const dropLine = new THREE.Line(dropGeo, dropMat);
+                parent.add(dropLine);
+
+                return {
+                    update(tip) {
+                        // Update triangle vertices
+                        const p = triGeo.attributes.position.array;
+                        p[0] = 0;     p[1] = 0;     p[2] = 0;
+                        p[3] = tip.x; p[4] = 0;     p[5] = tip.z;
+                        p[6] = tip.x; p[7] = tip.y; p[8] = tip.z;
+                        triGeo.attributes.position.needsUpdate = true;
+
+                        // Update floor projection line
+                        const fp = floorGeo.attributes.position.array;
+                        fp[0] = 0;     fp[1] = 0.01; fp[2] = 0;
+                        fp[3] = tip.x; fp[4] = 0.01; fp[5] = tip.z;
+                        floorGeo.attributes.position.needsUpdate = true;
+
+                        // Update vertical drop line
+                        const dp = dropGeo.attributes.position.array;
+                        dp[0] = tip.x; dp[1] = 0;     dp[2] = tip.z;
+                        dp[3] = tip.x; dp[4] = tip.y; dp[5] = tip.z;
+                        dropGeo.attributes.position.needsUpdate = true;
+                        dropLine.computeLineDistances();
+                    }
+                };
+            }
+
+            // -----------------------------------------------------------------
+            // DYNAMIC 3D CURVED ANGLE ARC
+            // -----------------------------------------------------------------
+            function createDynamicArc(parent, colorHex = 0x38bdf8) {
+                const segments = 28;
+                const geo = new THREE.BufferGeometry();
+                geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array((segments + 1) * 3), 3));
+                const mat = new THREE.LineBasicMaterial({ color: colorHex, transparent: true, opacity: 0.92 });
+                const line = new THREE.Line(geo, mat);
+                parent.add(line);
+
+                const v1 = new THREE.Vector3();
+                const v2 = new THREE.Vector3();
+                const axis = new THREE.Vector3();
+                const pt = new THREE.Vector3();
+                const mid = new THREE.Vector3();
+
+                return {
+                    line,
+                    material: mat,
+                    midpoint: mid,
+                    update(dir1, dir2, radius) {
+                        if (dir1.lengthSq() < 1e-6 || dir2.lengthSq() < 1e-6) {
+                            line.visible = false;
+                            return false;
+                        }
+                        v1.copy(dir1).normalize();
+                        v2.copy(dir2).normalize();
+                        const angle = v1.angleTo(v2);
+                        if (angle < 0.025) {
+                            line.visible = false;
+                            return false;
+                        }
+                        line.visible = true;
+                        axis.crossVectors(v1, v2);
+                        if (axis.lengthSq() < 1e-6) {
+                            axis.set(0, 1, 0);
+                        } else {
+                            axis.normalize();
+                        }
+
+                        const arr = geo.attributes.position.array;
+                        for (let i = 0; i <= segments; i++) {
+                            const t = (i / segments) * angle;
+                            pt.copy(v1).applyAxisAngle(axis, t).multiplyScalar(radius);
+                            arr[i * 3] = pt.x;
+                            arr[i * 3 + 1] = pt.y;
+                            arr[i * 3 + 2] = pt.z;
+                        }
+                        geo.attributes.position.needsUpdate = true;
+
+                        // Midpoint pushed slightly outward for clean label tracking
+                        mid.copy(v1).applyAxisAngle(axis, angle * 0.5).multiplyScalar(radius * 1.28);
+                        return true;
+                    }
+                };
+            }
+
+            // -----------------------------------------------------------------
+            // BUILD COORDINATE AXES (+X, +Y, +Z & DASHED -X, -Z)
+            // -----------------------------------------------------------------
+            function buildAxes() {
+                const axesGroup = new THREE.Group();
+                scene.add(axesGroup);
+
+                const makeAxis = (endVec, isPositive = true) => {
+                    if (isPositive) {
+                        const arrow = createDynamicArrow(0x94a3b8, 0.036, 0.38, 0.12, axesGroup);
+                        arrow.update(endVec, 1);
+                        axisObjects.push({ type: 'mesh', mat: arrow.material });
+                    } else {
+                        const geo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), endVec]);
+                        const mat = new THREE.LineDashedMaterial({
+                            color: 0x64748b,
+                            dashSize: 0.28,
+                            gapSize: 0.2,
+                            transparent: true,
+                            opacity: 0.55
+                        });
+                        const line = new THREE.Line(geo, mat);
+                        line.computeLineDistances();
+                        axesGroup.add(line);
+                        axisObjects.push({ type: 'line', mat });
+                    }
+                };
+
+                // Positive Axes
+                makeAxis(new THREE.Vector3(9.5, 0, 0), true);   // +x
+                makeAxis(new THREE.Vector3(0, 11.5, 0), true);  // +y (vertical UP)
+                makeAxis(new THREE.Vector3(0, 0, 8.5), true);   // +z
+
+                // Dashed Negative Reference Extensions (-x, -z)
+                makeAxis(new THREE.Vector3(-5.0, 0, 0), false);
+                makeAxis(new THREE.Vector3(0, 0, -4.5), false);
+
+                // Sleek Origin Sphere O
+                const originMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.3, metalness: 0.4 });
+                const originSphere = new THREE.Mesh(new THREE.SphereGeometry(0.14, 24, 24), originMat);
+                axesGroup.add(originSphere);
+                axisObjects.push({ type: 'mesh', mat: originMat });
+            }
+
+            function rebuildGrid(isDark) {
+                if (gridHelper) {
+                    scene.remove(gridHelper);
+                    gridHelper.geometry.dispose();
+                    if (Array.isArray(gridHelper.material)) {
+                        gridHelper.material.forEach(m => m.dispose());
+                    } else {
+                        gridHelper.material.dispose();
+                    }
+                }
+                const centerCol = isDark ? 0x334155 : 0x94a3b8;
+                const gridCol   = isDark ? 0x1e293b : 0xcbd5e1;
+                gridHelper = new THREE.GridHelper(20, 20, centerCol, gridCol);
+                gridHelper.position.y = -0.015;
+                gridHelper.material.transparent = true;
+                gridHelper.material.opacity = isDark ? 0.55 : 0.65;
+                gridHelper.visible = state.showGrid;
+                scene.add(gridHelper);
+            }
+
+            // -----------------------------------------------------------------
+            // BUILD RESULTANT PARALLELOGRAM LINES
+            // -----------------------------------------------------------------
+            function createDashedConnector(parent) {
+                const geo = new THREE.BufferGeometry();
+                geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6), 3));
+                const mat = new THREE.LineDashedMaterial({
+                    color: 0x10b981,
+                    dashSize: 0.32,
+                    gapSize: 0.18,
+                    transparent: true,
+                    opacity: 0
+                });
+                const line = new THREE.Line(geo, mat);
+                parent.add(line);
+                return {
+                    line,
+                    material: mat,
+                    update(p1, p2, opacity) {
+                        const arr = geo.attributes.position.array;
+                        arr[0] = p1.x; arr[1] = p1.y; arr[2] = p1.z;
+                        arr[3] = p2.x; arr[4] = p2.y; arr[5] = p2.z;
+                        geo.attributes.position.needsUpdate = true;
+                        line.computeLineDistances();
+                        mat.opacity = opacity;
+                        line.visible = opacity > 0.02;
+                    }
+                };
+            }
+
+            // -----------------------------------------------------------------
+            // REGISTER FLOATING 3D HTML LABELS
+            // -----------------------------------------------------------------
+            function addLabel(key, text, className, initialPos, category = 'core') {
+                const el = document.createElement('div');
+                el.className = `label-3d ${className}`;
+                el.textContent = text;
+                labelsLayer.appendChild(el);
+                labelMap[key] = {
+                    el,
+                    pos: initialPos.clone(),
+                    category,
+                    visible: true
+                };
+            }
+
+            function registerAllLabels() {
+                addLabel('origin', 'O', 'label-axis text-sm opacity-80', new THREE.Vector3(-0.42, -0.35, -0.35), 'axis');
+                addLabel('axisX', 'x', 'label-axis', new THREE.Vector3(10.0, -0.15, 0), 'axis');
+                addLabel('axisNegX', '−x', 'label-axis text-xs opacity-60', new THREE.Vector3(-5.4, 0.1, 0), 'axis');
+                addLabel('axisY', 'y', 'label-axis', new THREE.Vector3(0, 12.0, 0), 'axis');
+                addLabel('axisZ', 'z', 'label-axis', new THREE.Vector3(0, -0.15, 9.0), 'axis');
+
+                addLabel('vecA', 'A = 750 N', 'label-pill text-rose-400', new THREE.Vector3(), 'vector');
+                addLabel('vecB', 'B = 900 N', 'label-pill text-orange-400', new THREE.Vector3(), 'vector');
+                addLabel('vecR', 'F_R = 1550.2 N', 'label-pill text-emerald-400', new THREE.Vector3(), 'resultant');
+
+                addLabel('ang35', '35°', 'label-angle', new THREE.Vector3(), 'arc');
+                addLabel('ang25', '25°', 'label-angle', new THREE.Vector3(), 'arc');
+                addLabel('ang65', '65°', 'label-angle', new THREE.Vector3(), 'arc');
+                addLabel('ang20', '20°', 'label-angle', new THREE.Vector3(), 'arc');
+            }
+
+            const projScratch = new THREE.Vector3();
+            function updateLabelsScreenPositions() {
+                const w = window.innerWidth;
+                const h = window.innerHeight;
+
+                for (const key in labelMap) {
+                    const item = labelMap[key];
+                    let shouldShow = item.visible;
+
+                    if (item.category === 'arc' && !state.showArcs) shouldShow = false;
+                    if (item.category === 'resultant' && resultantProgress < 0.25) shouldShow = false;
+
+                    if (!shouldShow) {
+                        item.el.style.opacity = '0';
+                        continue;
+                    }
+
+                    projScratch.copy(item.pos).project(camera);
+                    if (projScratch.z > 1) {
+                        item.el.style.opacity = '0';
+                        continue;
+                    }
+
+                    const sx = (projScratch.x * 0.5 + 0.5) * w;
+                    const sy = (-projScratch.y * 0.5 + 0.5) * h;
+
+                    item.el.style.left = `${sx}px`;
+                    item.el.style.top = `${sy}px`;
+                    item.el.style.opacity = item.category === 'resultant'
+                        ? String(THREE.MathUtils.clamp((resultantProgress - 0.2) / 0.6, 0, 1))
+                        : '1';
+                }
+            }
+
+            // -----------------------------------------------------------------
+            // THEME SYNCHRONIZATION (CSS + THREE.JS SCENE)
+            // -----------------------------------------------------------------
+            function applyTheme(themeName, persist = true) {
+                state.theme = themeName;
+                const isDark = themeName === 'dark';
+                document.documentElement.setAttribute('data-theme', themeName);
+
+                if (persist) {
+                    try { localStorage.setItem('vectorlab_theme', themeName); } catch (_) {}
+                }
+
+                if (!scene) return;
+
+                // Subtle fog that blends edges softly into the ambient background
+                scene.fog = new THREE.FogExp2(isDark ? 0x070b14 : 0xeef3f9, 0.014);
+
+                // Lighting balance
+                ambientLight.intensity = isDark ? 0.75 : 0.95;
+                keyLight.intensity = isDark ? 0.95 : 0.75;
+                rimLight.intensity = isDark ? 0.55 : 0.35;
+
+                // Axis colors
+                const axisCol = isDark ? 0x94a3b8 : 0x334155;
+                const negAxisCol = isDark ? 0x475569 : 0x94a3b8;
+                axisObjects.forEach(obj => {
+                    obj.mat.color.setHex(obj.type === 'mesh' ? axisCol : negAxisCol);
+                });
+
+                // Projection plane translucency
+                planeMeshes.forEach(mat => {
+                    mat.color.setHex(isDark ? 0x38bdf8 : 0x0284c7);
+                    mat.opacity = isDark ? 0.16 : 0.18;
+                });
+
+                // Arc line contrast
+                const arcCol = isDark ? 0x7dd3fc : 0x0369a1;
+                [arc35Obj, arc25Obj, arc65Obj, arc20Obj].forEach(arc => {
+                    if (arc) arc.material.color.setHex(arcCol);
+                });
+
+                // Label accent colors for crisp contrast in both themes
+                if (labelMap.vecA) {
+                    labelMap.vecA.el.className = `label-3d label-pill ${isDark ? 'text-rose-400' : 'text-rose-600'}`;
+                    labelMap.vecB.el.className = `label-3d label-pill ${isDark ? 'text-orange-400' : 'text-orange-600'}`;
+                    labelMap.vecR.el.className = `label-3d label-pill ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`;
+                }
+
+                rebuildGrid(isDark);
+            }
+
+            // -----------------------------------------------------------------
+            // CAMERA PRESETS & SMOOTH CUBIC-EASED INTERPOLATION
+            // -----------------------------------------------------------------
+            const CAMERA_PRESETS = {
+                textbook: { pos: new THREE.Vector3(14.0, 9.6, 16.2), target: new THREE.Vector3(0.6, 3.8, 1.0) },
+                top:      { pos: new THREE.Vector3(0.6, 23.0, 0.05), target: new THREE.Vector3(0.6, 0.0, 1.4) },
+                front:    { pos: new THREE.Vector3(0.8, 4.4, 22.5),  target: new THREE.Vector3(0.8, 4.4, 0.0) },
+                side:     { pos: new THREE.Vector3(22.5, 4.4, 1.5),  target: new THREE.Vector3(0.0, 4.4, 1.5) }
+            };
+
+            function animateCameraTo(presetName) {
+                const preset = CAMERA_PRESETS[presetName] || CAMERA_PRESETS.textbook;
+                camAnim.active = true;
+                camAnim.startTime = performance.now();
+                camAnim.startPos.copy(camera.position);
+                camAnim.endPos.copy(preset.pos);
+                camAnim.startTarget.copy(controls.target);
+                camAnim.endTarget.copy(preset.target);
+
+                // If resultant is visible and we're in textbook view, pull back gently
+                if (presetName === 'textbook' && state.showResultant) {
+                    camAnim.endPos.multiplyScalar(1.22);
+                    camAnim.endTarget.y = 5.4;
+                }
+            }
+
+            function positionDockPill(activeBtn) {
+                const pill = document.getElementById('dock-pill');
+                if (!pill || !activeBtn) return;
+                pill.style.width = `${activeBtn.offsetWidth}px`;
+                pill.style.transform = `translateX(${activeBtn.offsetLeft - 5}px)`;
+            }
+
+            // -----------------------------------------------------------------
+            // UI EVENT HANDLERS (EXPOSED GLOBALLY FOR INLINE BUTTONS)
+            // -----------------------------------------------------------------
+            window.setCameraPreset = function (presetName, btnEl) {
+                document.querySelectorAll('.dock-btn').forEach(b => b.classList.remove('active'));
+                if (btnEl) {
+                    btnEl.classList.add('active');
+                    positionDockPill(btnEl);
+                }
+                animateCameraTo(presetName);
+            };
+
+            window.toggleTheme = function () {
+                applyTheme(state.theme === 'dark' ? 'light' : 'dark', true);
+            };
+
+            window.toggleAutoOrbit = function () {
+                state.autoOrbit = !state.autoOrbit;
+                controls.autoRotate = state.autoOrbit;
+                document.getElementById('btn-orbit').classList.toggle('active-state', state.autoOrbit);
+            };
+
+            window.toggleInspector = function () {
+                state.inspectorOpen = !state.inspectorOpen;
+                const panel = document.getElementById('inspector-panel');
+                panel.classList.toggle('collapsed', !state.inspectorOpen);
+                document.getElementById('btn-toggle-inspector').classList.toggle('active-state', state.inspectorOpen);
+            };
+
+            window.onToggleResultant = function (checked) {
+                state.showResultant = checked;
+                if (checked && camera.position.length() < 24) {
+                    // Gently frame the taller resultant vector
+                    const activeBtn = document.querySelector('.dock-btn.active');
+                    const preset = activeBtn ? activeBtn.dataset.preset : 'textbook';
+                    if (preset === 'textbook') animateCameraTo('textbook');
+                }
+            };
+
+            window.onToggleDisplay = function () {
+                state.showPlanes = document.getElementById('toggle-planes').checked;
+                state.showArcs   = document.getElementById('toggle-arcs').checked;
+                state.showGrid   = document.getElementById('toggle-grid').checked;
+
+                planesGroup.visible = state.showPlanes;
+                arcsGroup.visible   = state.showArcs;
+                if (gridHelper) gridHelper.visible = state.showGrid;
+            };
+
+            window.resetTextbookDefaults = function () {
+                Object.assign(state, TEXTBOOK_DEFAULTS);
+                syncInputsFromState();
+                updateMathAndTargets(false);
+                const tbBtn = document.querySelector('.dock-btn[data-preset="textbook"]');
+                window.setCameraPreset('textbook', tbBtn);
+            };
+
+            // Sync Sliders <-> Numeric Inputs
+            const controlBindings = [
+                { key: 'aMag',   rng: 'rng-a-mag',   num: 'num-a-mag',   min: 100, max: 1500 },
+                { key: 'aTheta', rng: 'rng-a-theta', num: 'num-a-theta', min: 1,   max: 89   },
+                { key: 'aPhi',   rng: 'rng-a-phi',   num: 'num-a-phi',   min: -85, max: 85   },
+                { key: 'bMag',   rng: 'rng-b-mag',   num: 'num-b-mag',   min: 100, max: 1500 },
+                { key: 'bElev',  rng: 'rng-b-elev',  num: 'num-b-elev',  min: 1,   max: 89   },
+                { key: 'bPhi',   rng: 'rng-b-phi',   num: 'num-b-phi',   min: -85, max: 85   }
+            ];
+
+            function syncInputsFromState() {
+                controlBindings.forEach(b => {
+                    document.getElementById(b.rng).value = state[b.key];
+                    document.getElementById(b.num).value = state[b.key];
+                });
+            }
+
+            function bindControls() {
+                controlBindings.forEach(b => {
+                    const rngEl = document.getElementById(b.rng);
+                    const numEl = document.getElementById(b.num);
+
+                    rngEl.addEventListener('input', () => {
+                        const val = parseFloat(rngEl.value);
+                        state[b.key] = val;
+                        numEl.value = val;
+                        updateMathAndTargets(false);
+                    });
+
+                    numEl.addEventListener('input', () => {
+                        let val = parseFloat(numEl.value);
+                        if (Number.isNaN(val)) return;
+                        val = THREE.MathUtils.clamp(val, b.min, b.max);
+                        state[b.key] = val;
+                        rngEl.value = val;
+                        updateMathAndTargets(false);
+                    });
+                });
+            }
+
+            // -----------------------------------------------------------------
+            // INITIALIZE THREE.JS SCENE
+            // -----------------------------------------------------------------
+            function initScene() {
+                const container = document.getElementById('viewport');
+
+                scene = new THREE.Scene();
+
+                camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 200);
+                camera.position.copy(CAMERA_PRESETS.textbook.pos);
+
+                renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                renderer.outputEncoding = THREE.sRGBEncoding;
+                container.appendChild(renderer.domElement);
+
+                // Smooth Damped OrbitControls
+                controls = new THREE.OrbitControls(camera, renderer.domElement);
+                controls.enableDamping = true;
+                controls.dampingFactor = 0.06;
+                controls.rotateSpeed = 0.78;
+                controls.zoomSpeed = 0.9;
+                controls.panSpeed = 0.75;
+                controls.minDistance = 7;
+                controls.maxDistance = 55;
+                controls.autoRotate = false;
+                controls.autoRotateSpeed = 1.1;
+                controls.target.copy(CAMERA_PRESETS.textbook.target);
+
+                // Cancel camera preset animation & pause Auto-Orbit when user grabs the canvas
+                controls.addEventListener('start', () => {
+                    camAnim.active = false;
+                    if (state.autoOrbit) {
+                        state.autoOrbit = false;
+                        controls.autoRotate = false;
+                        document.getElementById('btn-orbit').classList.remove('active-state');
+                    }
+                });
+
+                // Studio 3-Point Lighting
+                ambientLight = new THREE.AmbientLight(0xffffff, 0.75);
+                scene.add(ambientLight);
+
+                keyLight = new THREE.DirectionalLight(0xffffff, 0.95);
+                keyLight.position.set(14, 24, 18);
+                scene.add(keyLight);
+
+                rimLight = new THREE.DirectionalLight(0x7dd3fc, 0.55);
+                rimLight.position.set(-16, 10, -14);
+                scene.add(rimLight);
+
+                // Coordinate Axes
+                buildAxes();
+
+                // Main Vector Arrows
+                arrowA = createDynamicArrow(0xf43f5e, 0.115, 0.72, 0.27, scene); // Vibrant Coral-Red
+                arrowB = createDynamicArrow(0xf97316, 0.115, 0.72, 0.27, scene); // Vibrant Amber-Coral
+
+                // Projection Planes Group
+                planesGroup = new THREE.Group();
+                scene.add(planesGroup);
+                planeAObj = createDynamicProjectionPlane(planesGroup);
+                planeBObj = createDynamicProjectionPlane(planesGroup);
+
+                // Angle Arcs Group
+                arcsGroup = new THREE.Group();
+                scene.add(arcsGroup);
+                arc35Obj = createDynamicArc(arcsGroup);
+                arc25Obj = createDynamicArc(arcsGroup);
+                arc65Obj = createDynamicArc(arcsGroup);
+                arc20Obj = createDynamicArc(arcsGroup);
+
+                // Resultant Force Group
+                resultantGroup = new THREE.Group();
+                scene.add(resultantGroup);
+                arrowR = createDynamicArrow(0x10b981, 0.125, 0.80, 0.30, resultantGroup);
+                paraLine1 = createDashedConnector(resultantGroup);
+                paraLine2 = createDashedConnector(resultantGroup);
+
+                // Labels & Initial Geometry
+                registerAllLabels();
+                updateMathAndTargets(true);
+
+                // Load saved theme (default Dark Mode)
+                let savedTheme = 'dark';
+                try {
+                    const stored = localStorage.getItem('vectorlab_theme');
+                    if (stored === 'light' || stored === 'dark') savedTheme = stored;
+                } catch (_) {}
+                applyTheme(savedTheme, false);
+
+                // Inspector initial responsive state
+                const panel = document.getElementById('inspector-panel');
+                if (!state.inspectorOpen) {
+                    panel.classList.add('collapsed');
+                } else {
+                    document.getElementById('btn-toggle-inspector').classList.add('active-state');
+                }
+
+                // Position initial camera dock pill
+                requestAnimationFrame(() => {
+                    positionDockPill(document.querySelector('.dock-btn.active'));
+                });
+
+                window.addEventListener('resize', onResize);
+            }
+
+            function onResize() {
+                if (!camera || !renderer) return;
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                positionDockPill(document.querySelector('.dock-btn.active'));
+            }
+
+            // -----------------------------------------------------------------
+            // MAIN 60FPS ANIMATION LOOP (SPRING LERP + EASING)
+            // -----------------------------------------------------------------
+            const vecUp = new THREE.Vector3(0, 1, 0);
+            const vecPosX = new THREE.Vector3(1, 0, 0);
+            const vecPosZ = new THREE.Vector3(0, 0, 1);
+            const floorA = new THREE.Vector3();
+            const floorB = new THREE.Vector3();
+            const tipOffset = new THREE.Vector3();
+
+            function easeOutCubic(t) {
+                return 1 - Math.pow(1 - t, 3);
+            }
+
+            function animate(now) {
+                requestAnimationFrame(animate);
+
+                // 1. Smooth Cubic-Eased Camera Preset Transition
+                if (camAnim.active) {
+                    const elapsed = now - camAnim.startTime;
+                    const rawT = Math.min(1, elapsed / camAnim.duration);
+                    const easedT = easeOutCubic(rawT);
+
+                    camera.position.lerpVectors(camAnim.startPos, camAnim.endPos, easedT);
+                    controls.target.lerpVectors(camAnim.startTarget, camAnim.endTarget, easedT);
+
+                    if (rawT >= 1) camAnim.active = false;
+                }
+
+                // 2. Smooth Spring/Lerp Interpolation for Vector A & B
+                const lerpFactor = 0.14;
+                currentA.lerp(targetA, lerpFactor);
+                currentB.lerp(targetB, lerpFactor);
+                currentR.addVectors(currentA, currentB);
+
+                // 3. Smooth Resultant Growth / Shrink Animation
+                const targetRes = state.showResultant ? 1 : 0;
+                resultantProgress += (targetRes - resultantProgress) * 0.12;
+                if (Math.abs(targetRes - resultantProgress) < 0.002) resultantProgress = targetRes;
+
+                // 4. Update 3D Arrows
+                arrowA.update(currentA, 1);
+                arrowB.update(currentB, 1);
+                arrowR.update(currentR, resultantProgress);
+
+                // Update Parallelogram Dashed Construction Lines
+                const paraOpacity = THREE.MathUtils.clamp((resultantProgress - 0.15) / 0.85, 0, 0.85);
+                const animatedTipR = tipOffset.copy(currentR).multiplyScalar(resultantProgress);
+                paraLine1.update(currentA, animatedTipR, paraOpacity);
+                paraLine2.update(currentB, animatedTipR, paraOpacity);
+
+                // 5. Update Vertical Projection Planes
+                planeAObj.update(currentA);
+                planeBObj.update(currentB);
+
+                // 6. Update Curved 3D Angle Arcs
+                floorA.set(currentA.x, 0, currentA.z);
+                floorB.set(currentB.x, 0, currentB.z);
+
+                const rA = Math.min(2.6, currentA.length() * 0.42);
+                const rB = Math.min(2.4, currentB.length() * 0.36);
+
+                labelMap.ang35.visible = arc35Obj.update(vecUp, currentA, rA);
+                labelMap.ang25.visible = arc25Obj.update(vecPosX, floorA, Math.min(2.7, floorA.length() * 0.65));
+                labelMap.ang65.visible = arc65Obj.update(floorB, currentB, rB);
+                labelMap.ang20.visible = arc20Obj.update(vecPosZ, floorB, Math.min(2.6, floorB.length() * 0.68));
+
+                // 7. Update Floating 3D HTML Label Anchor Positions
+                labelMap.vecA.pos.copy(currentA).add(new THREE.Vector3(0.15, 0.62, 0));
+                labelMap.vecB.pos.copy(currentB).add(new THREE.Vector3(-0.15, 0.62, 0));
+                labelMap.vecR.pos.copy(animatedTipR).add(new THREE.Vector3(0, 0.72, 0));
+
+                labelMap.ang35.pos.copy(arc35Obj.midpoint);
+                labelMap.ang25.pos.copy(arc25Obj.midpoint);
+                labelMap.ang65.pos.copy(arc65Obj.midpoint);
+                labelMap.ang20.pos.copy(arc20Obj.midpoint);
+
+                // 8. Update Controls, Render, and Project Labels
+                controls.update();
+                renderer.render(scene, camera);
+                updateLabelsScreenPositions();
+            }
+
+            // Start Application on Window Load
+            window.onload = function () {
+                bindControls();
+                initScene();
+                requestAnimationFrame(animate);
+            };
+        })();
+    </script>
+</body>
+</html>
