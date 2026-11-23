@@ -751,6 +751,14 @@
                 <h3 class="text-xs font-bold tracking-tight" style="color: var(--text-primary);">3D Scene Layers</h3>
 
                 <label class="flex items-center justify-between cursor-pointer text-xs">
+                    <span style="color: var(--text-secondary);">3D Angle Arcs &amp; Degree Badges</span>
+                    <input type="checkbox" id="toggle-angles" checked class="sr-only" onchange="window.onToggleDisplay()">
+                    <div class="switch-track" style="--switch-color: #38bdf8;">
+                        <div class="switch-thumb"></div>
+                    </div>
+                </label>
+
+                <label class="flex items-center justify-between cursor-pointer text-xs">
                     <span style="color: var(--text-secondary);">Vertical Projection Triangles</span>
                     <input type="checkbox" id="toggle-planes" checked class="sr-only" onchange="window.onToggleDisplay()">
                     <div class="switch-track" style="--switch-color: #38bdf8;">
@@ -759,7 +767,7 @@
                 </label>
 
                 <label class="flex items-center justify-between cursor-pointer text-xs">
-                    <span style="color: var(--text-secondary);">XZ Ground Coordinate Grid</span>
+                    <span style="color: var(--text-secondary);">Floor Coordinate Grid &amp; Shadows</span>
                     <input type="checkbox" id="toggle-grid" checked class="sr-only" onchange="window.onToggleDisplay()">
                     <div class="switch-track" style="--switch-color: #38bdf8;">
                         <div class="switch-thumb"></div>
@@ -918,6 +926,7 @@
             axisPreset: 'y-up',
             activeCameraPreset: 'isometric',
             showResultant: true,
+            showAngles: true,
             showPlanes: true,
             showGrid: true,
             autoOrbit: false,
@@ -929,11 +938,12 @@
         // THREE.JS SCENE GLOBALS
         // ---------------------------------------------------------------------
         let scene, camera, renderer, controls;
-        let ambientLight, keyLight, rimLight;
-        let gridHelper = null;
+        let hemiLight, ambientLight, keyLight, rimLight, fillLight;
+        let floorDisc = null, gridHelper = null;
         let axisGroup, axisSprites = [], axisMaterials = [];
         let axisRods = {};
         let axisLabelMap = {};
+        let originHubGroup = null, originCoreMat = null, originRingMat = null;
         const currentAxisBasis = {
             x: new THREE.Vector3(1, 0, 0),
             y: new THREE.Vector3(0, 1, 0),
@@ -1037,6 +1047,7 @@
             const {
                 accentHex = '#38bdf8',
                 isAxis = false,
+                isAngle = false,
                 isDark = state.theme === 'dark'
             } = options;
 
@@ -1048,13 +1059,12 @@
                 canvas.height = 192;
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                // Subtle circular halo pill for crisp contrast
                 ctx.beginPath();
                 ctx.arc(96, 96, 56, 0, Math.PI * 2);
-                ctx.fillStyle = isDark ? 'rgba(10, 15, 28, 0.72)' : 'rgba(255, 255, 255, 0.85)';
+                ctx.fillStyle = isDark ? 'rgba(10, 15, 28, 0.78)' : 'rgba(255, 255, 255, 0.88)';
                 ctx.fill();
                 ctx.lineWidth = 4;
-                ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(15, 23, 42, 0.12)';
+                ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.18)' : 'rgba(15, 23, 42, 0.14)';
                 ctx.stroke();
 
                 ctx.font = 'italic 700 62px Inter, Georgia, serif';
@@ -1062,14 +1072,40 @@
                 ctx.textBaseline = 'middle';
                 ctx.fillStyle = isDark ? '#f8fafc' : '#0f172a';
                 ctx.fillText(text, 96, 100);
+            } else if (isAngle) {
+                canvas.width = 320;
+                canvas.height = 112;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                ctx.font = '700 42px "JetBrains Mono", Inter, monospace';
+                const metrics = ctx.measureText(text);
+                const pillW = Math.min(296, Math.max(132, metrics.width + 48));
+                const pillH = 68;
+                const x = (canvas.width - pillW) / 2;
+                const y = (canvas.height - pillH) / 2;
+                const r = pillH / 2;
+
+                ctx.beginPath();
+                ctx.roundRect(x, y, pillW, pillH, r);
+                ctx.fillStyle = isDark ? 'rgba(8, 13, 24, 0.88)' : 'rgba(255, 255, 255, 0.94)';
+                ctx.fill();
+
+                ctx.lineWidth = 3.5;
+                ctx.strokeStyle = accentHex;
+                ctx.stroke();
+
+                ctx.fillStyle = isDark ? '#f8fafc' : '#0f172a';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(text, canvas.width / 2, canvas.height / 2 + 2);
             } else {
                 canvas.width = 512;
                 canvas.height = 128;
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                ctx.font = '700 44px "JetBrains Mono", Inter, monospace';
+                ctx.font = '700 42px "JetBrains Mono", Inter, monospace';
                 const metrics = ctx.measureText(text);
-                const textW = Math.min(440, Math.max(180, metrics.width + 76));
+                const textW = Math.min(460, Math.max(190, metrics.width + 78));
                 const pillH = 78;
                 const x = (canvas.width - textW) / 2;
                 const y = (canvas.height - pillH) / 2;
@@ -1078,7 +1114,7 @@
                 // Rounded Glass Pill Background
                 ctx.beginPath();
                 ctx.roundRect(x, y, textW, pillH, r);
-                ctx.fillStyle = isDark ? 'rgba(9, 14, 26, 0.84)' : 'rgba(255, 255, 255, 0.90)';
+                ctx.fillStyle = isDark ? 'rgba(9, 14, 26, 0.86)' : 'rgba(255, 255, 255, 0.92)';
                 ctx.fill();
 
                 ctx.lineWidth = 4;
@@ -1110,11 +1146,13 @@
             });
 
             const sprite = new THREE.Sprite(material);
-            sprite.renderOrder = 20;
+            sprite.renderOrder = 22;
             if (isAxis) {
                 sprite.scale.set(1.35, 1.35, 1);
+            } else if (isAngle) {
+                sprite.scale.set(2.45, 0.86, 1);
             } else {
-                sprite.scale.set(4.2, 1.05, 1);
+                sprite.scale.set(4.35, 1.08, 1);
             }
 
             return {
@@ -1124,11 +1162,13 @@
                 text,
                 accentHex,
                 isAxis,
+                isAngle,
                 redraw(newText, darkFlag) {
                     this.text = newText;
                     const newObj = createTextSprite(newText, {
                         accentHex: this.accentHex,
                         isAxis: this.isAxis,
+                        isAngle: this.isAngle,
                         isDark: darkFlag
                     });
                     this.texture.dispose();
@@ -1145,27 +1185,53 @@
         }
 
         // ---------------------------------------------------------------------
-        // DYNAMIC 3D ARROW MESH (SHAFT + CONE HEAD)
+        // REALISTIC MACHINED PBR METALLIC FORCE POLE (SHAFT + COLLARS + HEAD)
         // ---------------------------------------------------------------------
         function createArrowMesh(colorNum, shaftRadius, headLen, headRadius, parent) {
             const group = new THREE.Group();
-            const mat = new THREE.MeshPhysicalMaterial({
+
+            // Anodized PBR Metallic Shaft Material
+            const shaftMat = new THREE.MeshPhysicalMaterial({
                 color: colorNum,
-                roughness: 0.25,
-                metalness: 0.15,
-                clearcoat: 0.55,
-                clearcoatRoughness: 0.2
+                roughness: 0.22,
+                metalness: 0.58,
+                clearcoat: 0.85,
+                clearcoatRoughness: 0.14,
+                reflectivity: 0.9
             });
 
-            const shaftGeo = new THREE.CylinderGeometry(shaftRadius, shaftRadius, 1, 24);
+            // Brushed Chrome / Titanium Collar Accent Material
+            const chromeMat = new THREE.MeshStandardMaterial({
+                color: 0xe2e8f0,
+                roughness: 0.18,
+                metalness: 0.88
+            });
+
+            // 1. Cylindrical Force Pole (Shaft)
+            const shaftGeo = new THREE.CylinderGeometry(shaftRadius * 0.92, shaftRadius, 1, 28);
             shaftGeo.translate(0, 0.5, 0);
-            const shaft = new THREE.Mesh(shaftGeo, mat);
+            const shaft = new THREE.Mesh(shaftGeo, shaftMat);
+            shaft.castShadow = true;
 
-            const headGeo = new THREE.ConeGeometry(headRadius, headLen, 28);
+            // 2. Base Gimbal Socket Collar (emerges from Origin Hub O)
+            const baseCollarGeo = new THREE.CylinderGeometry(shaftRadius * 1.48, shaftRadius * 1.65, 0.24, 24);
+            baseCollarGeo.translate(0, 0.22, 0);
+            const baseCollar = new THREE.Mesh(baseCollarGeo, chromeMat);
+            baseCollar.castShadow = true;
+
+            // 3. Machined Head Flange Collar (sits flush behind arrowhead cone)
+            const headCollarGeo = new THREE.CylinderGeometry(headRadius * 0.72, shaftRadius * 1.38, 0.11, 24);
+            headCollarGeo.translate(0, -0.055, 0);
+            const headCollar = new THREE.Mesh(headCollarGeo, chromeMat);
+            headCollar.castShadow = true;
+
+            // 4. Sculpted Conical Dart Arrowhead Tip
+            const headGeo = new THREE.ConeGeometry(headRadius, headLen, 32);
             headGeo.translate(0, headLen * 0.5, 0);
-            const head = new THREE.Mesh(headGeo, mat);
+            const head = new THREE.Mesh(headGeo, shaftMat);
+            head.castShadow = true;
 
-            group.add(shaft, head);
+            group.add(shaft, baseCollar, headCollar, head);
             parent.add(group);
 
             const upVec = new THREE.Vector3(0, 1, 0);
@@ -1175,7 +1241,7 @@
                 group,
                 update(tipVec, scaleMult = 1) {
                     const len = tipVec.length() * scaleMult;
-                    if (len < 0.025) {
+                    if (len < 0.03) {
                         group.visible = false;
                         return;
                     }
@@ -1183,72 +1249,226 @@
                     dirVec.copy(tipVec).normalize();
                     group.quaternion.setFromUnitVectors(upVec, dirVec);
 
-                    const effHead = Math.min(headLen, len * 0.44);
+                    const effHead = Math.min(headLen, len * 0.42);
                     const headScale = effHead / headLen;
                     const shaftLen = Math.max(0.001, len - effHead);
 
                     shaft.scale.set(1, shaftLen, 1);
+                    baseCollar.visible = len > 0.55;
+                    headCollar.visible = len > 0.45;
+                    headCollar.scale.set(headScale, headScale, headScale);
+                    headCollar.position.set(0, shaftLen, 0);
+
                     head.scale.set(headScale, headScale, headScale);
                     head.position.set(0, shaftLen, 0);
                 },
                 dispose() {
                     shaftGeo.dispose();
+                    baseCollarGeo.dispose();
+                    headCollarGeo.dispose();
                     headGeo.dispose();
-                    mat.dispose();
+                    shaftMat.dispose();
+                    chromeMat.dispose();
                     parent.remove(group);
                 }
             };
         }
 
         // ---------------------------------------------------------------------
-        // 3D VECTOR BUNDLE (ARROW + VERTICAL PROJECTION TRIANGLE + TIP SPRITE)
+        // 3D CURVED ANGLE ARC + TRANSLUCENT WEDGE SECTOR HELPER
+        // ---------------------------------------------------------------------
+        function createAngleArcVisual(colorNum, accentHex, parent, segments = 32) {
+            const arcGroup = new THREE.Group();
+            parent.add(arcGroup);
+
+            // Glowing Tubular/Ribbon Arc Curve
+            const lineGeo = new THREE.BufferGeometry();
+            lineGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array((segments + 1) * 3), 3));
+            const lineMat = new THREE.LineBasicMaterial({
+                color: colorNum,
+                transparent: true,
+                opacity: 0.95
+            });
+            const arcLine = new THREE.Line(lineGeo, lineMat);
+            arcLine.renderOrder = 12;
+            arcGroup.add(arcLine);
+
+            // Translucent Wedge Sector Fan from Origin O
+            const fanGeo = new THREE.BufferGeometry();
+            fanGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array((segments + 2) * 3), 3));
+            const indices = [];
+            for (let i = 1; i <= segments; i++) {
+                indices.push(0, i, i + 1);
+            }
+            fanGeo.setIndex(indices);
+            const fanMat = new THREE.MeshBasicMaterial({
+                color: colorNum,
+                transparent: true,
+                opacity: 0.14,
+                side: THREE.DoubleSide,
+                depthWrite: false
+            });
+            const fanMesh = new THREE.Mesh(fanGeo, fanMat);
+            fanMesh.renderOrder = 8;
+            arcGroup.add(fanMesh);
+
+            // Floating Degree Pill Badge
+            const labelSprite = createTextSprite('0.0°', {
+                accentHex,
+                isAngle: true,
+                isDark: state.theme === 'dark'
+            });
+            arcGroup.add(labelSprite.sprite);
+
+            let lastText = '';
+            const vStart = new THREE.Vector3();
+            const vEnd = new THREE.Vector3();
+            const rotAxis = new THREE.Vector3();
+            const pt = new THREE.Vector3();
+
+            return {
+                labelSprite,
+                update(dirFrom, dirTo, radius, degValue, visibleFlag, labelOffsetMult = 1.32) {
+                    if (!visibleFlag || Math.abs(degValue) < 0.4 || dirFrom.lengthSq() < 1e-6 || dirTo.lengthSq() < 1e-6) {
+                        arcGroup.visible = false;
+                        return;
+                    }
+
+                    vStart.copy(dirFrom).normalize();
+                    vEnd.copy(dirTo).normalize();
+                    const angleRad = vStart.angleTo(vEnd);
+
+                    if (angleRad < 0.008 || Number.isNaN(angleRad)) {
+                        arcGroup.visible = false;
+                        return;
+                    }
+
+                    arcGroup.visible = true;
+
+                    rotAxis.crossVectors(vStart, vEnd);
+                    if (rotAxis.lengthSq() < 1e-8) {
+                        rotAxis.set(0, 1, 0);
+                    } else {
+                        rotAxis.normalize();
+                    }
+
+                    const lineArr = lineGeo.attributes.position.array;
+                    const fanArr = fanGeo.attributes.position.array;
+                    fanArr[0] = 0; fanArr[1] = 0; fanArr[2] = 0;
+
+                    for (let i = 0; i <= segments; i++) {
+                        const t = (i / segments) * angleRad;
+                        pt.copy(vStart).applyAxisAngle(rotAxis, t).multiplyScalar(radius);
+
+                        const lIdx = i * 3;
+                        lineArr[lIdx] = pt.x;
+                        lineArr[lIdx + 1] = pt.y;
+                        lineArr[lIdx + 2] = pt.z;
+
+                        const fIdx = (i + 1) * 3;
+                        fanArr[fIdx] = pt.x;
+                        fanArr[fIdx + 1] = pt.y;
+                        fanArr[fIdx + 2] = pt.z;
+                    }
+
+                    lineGeo.attributes.position.needsUpdate = true;
+                    fanGeo.attributes.position.needsUpdate = true;
+
+                    // Position floating degree badge cleanly outside arc midpoint
+                    pt.copy(vStart).applyAxisAngle(rotAxis, angleRad * 0.5).multiplyScalar(radius * labelOffsetMult);
+                    labelSprite.sprite.position.copy(pt);
+
+                    const formatted = `${Math.abs(degValue).toFixed(1)}°`;
+                    if (formatted !== lastText) {
+                        lastText = formatted;
+                        labelSprite.redraw(formatted, state.theme === 'dark');
+                    }
+                },
+                dispose() {
+                    lineGeo.dispose();
+                    lineMat.dispose();
+                    fanGeo.dispose();
+                    fanMat.dispose();
+                    labelSprite.dispose();
+                    parent.remove(arcGroup);
+                }
+            };
+        }
+
+        // ---------------------------------------------------------------------
+        // 3D VECTOR BUNDLE (PBR POLE + ANGLE ARCS + PROJECTION PLANE + TARGET RING)
         // ---------------------------------------------------------------------
         function createVector3DBundle(vecObj) {
             const bundleGroup = new THREE.Group();
             vectorsGroup.add(bundleGroup);
 
-            // 1. 3D Shaft + Cone Arrow
-            const arrow = createArrowMesh(vecObj.color.num, 0.105, 0.68, 0.25, bundleGroup);
+            // 1. Realistic Metallic Force Pole (Shaft + Collars + Sculpted Head)
+            const arrow = createArrowMesh(vecObj.color.num, 0.115, 0.72, 0.27, bundleGroup);
 
-            // 2. Translucent Vertical Projection Triangle: Origin (0,0,0) -> Floor (x,0,z) -> Tip (x,y,z)
+            // 2. 3D Elevation & Azimuth Angle Arcs with Live Degree Badges
+            const elevArc = createAngleArcVisual(vecObj.color.num, vecObj.color.hex, bundleGroup, 28);
+            const azimArc = createAngleArcVisual(vecObj.color.num, vecObj.color.hex, bundleGroup, 32);
+
+            // 3. Translucent Vertical Projection Triangle: Origin (0,0,0) -> Floor (x,0,z) -> Tip (x,y,z)
             const triGeo = new THREE.BufferGeometry();
             triGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(9), 3));
             const triMat = new THREE.MeshBasicMaterial({
                 color: vecObj.color.num,
                 transparent: true,
-                opacity: state.theme === 'dark' ? 0.16 : 0.18,
+                opacity: state.theme === 'dark' ? 0.15 : 0.17,
                 side: THREE.DoubleSide,
                 depthWrite: false
             });
             const triMesh = new THREE.Mesh(triGeo, triMat);
             bundleGroup.add(triMesh);
 
-            // 3. Floor Radial Line: (0,0,0) -> (x,0,z)
+            // 4. Solid Floor Radial Projection Ray: (0,0,0) -> (x,0,z)
             const floorGeo = new THREE.BufferGeometry();
             floorGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6), 3));
             const floorMat = new THREE.LineBasicMaterial({
                 color: vecObj.color.num,
                 transparent: true,
-                opacity: 0.78
+                opacity: 0.85
             });
             const floorLine = new THREE.Line(floorGeo, floorMat);
             bundleGroup.add(floorLine);
 
-            // 4. Dashed Vertical Drop Line: (x,0,z) -> (x,y,z)
+            // 5. Dashed Vertical Plumb Drop Line: (x,0,z) -> (x,y,z)
             const dropGeo = new THREE.BufferGeometry();
             dropGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6), 3));
             const dropMat = new THREE.LineDashedMaterial({
                 color: vecObj.color.num,
-                dashSize: 0.22,
+                dashSize: 0.24,
                 gapSize: 0.14,
                 transparent: true,
-                opacity: 0.85
+                opacity: 0.9
             });
             const dropLine = new THREE.Line(dropGeo, dropMat);
             bundleGroup.add(dropLine);
 
-            // 5. Floating Canvas-Texture Sprite Label
-            const spriteObj = createTextSprite(`${vecObj.label}: ${Math.round(vecObj.mag)} N`, {
+            // 6. Glowing Floor Projection Target Ring & Drop Pin at (x, 0.02, z)
+            const targetRingGroup = new THREE.Group();
+            const outerRingGeo = new THREE.RingGeometry(0.18, 0.27, 32);
+            outerRingGeo.rotateX(-Math.PI / 2);
+            const outerRingMat = new THREE.MeshBasicMaterial({
+                color: vecObj.color.num,
+                transparent: true,
+                opacity: 0.85,
+                side: THREE.DoubleSide
+            });
+            const innerDotGeo = new THREE.CircleGeometry(0.09, 24);
+            innerDotGeo.rotateX(-Math.PI / 2);
+            const innerDotMat = new THREE.MeshBasicMaterial({
+                color: vecObj.color.num,
+                transparent: true,
+                opacity: 0.95,
+                side: THREE.DoubleSide
+            });
+            targetRingGroup.add(new THREE.Mesh(outerRingGeo, outerRingMat), new THREE.Mesh(innerDotGeo, innerDotMat));
+            bundleGroup.add(targetRingGroup);
+
+            // 7. Floating Canvas-Texture Sprite Label
+            const spriteObj = createTextSprite(`${vecObj.label} · ${Math.round(vecObj.mag)} N`, {
                 accentHex: vecObj.color.hex,
                 isAxis: false,
                 isDark: state.theme === 'dark'
@@ -1256,18 +1476,26 @@
             bundleGroup.add(spriteObj.sprite);
 
             const tipScaled = new THREE.Vector3();
+            const floorDir = new THREE.Vector3();
+            const refHorizDir = new THREE.Vector3();
 
             return {
                 triMat,
                 spriteObj,
+                elevArc,
+                azimArc,
                 update(animatedTip, growth) {
                     tipScaled.copy(animatedTip).multiplyScalar(growth);
                     arrow.update(animatedTip, growth);
 
-                    const showProj = state.showPlanes && tipScaled.lengthSq() > 0.002;
+                    const len = tipScaled.length();
+                    const horizLen = Math.hypot(tipScaled.x, tipScaled.z);
+                    const showProj = state.showPlanes && len > 0.05;
+
                     triMesh.visible = showProj;
                     floorLine.visible = showProj;
                     dropLine.visible = showProj;
+                    targetRingGroup.visible = showProj && horizLen > 0.12;
 
                     if (showProj) {
                         const p = triGeo.attributes.position.array;
@@ -1277,23 +1505,50 @@
                         triGeo.attributes.position.needsUpdate = true;
 
                         const fp = floorGeo.attributes.position.array;
-                        fp[0] = 0;           fp[1] = 0.015; fp[2] = 0;
-                        fp[3] = tipScaled.x; fp[4] = 0.015; fp[5] = tipScaled.z;
+                        fp[0] = 0;           fp[1] = 0.02; fp[2] = 0;
+                        fp[3] = tipScaled.x; fp[4] = 0.02; fp[5] = tipScaled.z;
                         floorGeo.attributes.position.needsUpdate = true;
 
                         const dp = dropGeo.attributes.position.array;
-                        dp[0] = tipScaled.x; dp[1] = 0;           dp[2] = tipScaled.z;
+                        dp[0] = tipScaled.x; dp[1] = 0.02;        dp[2] = tipScaled.z;
                         dp[3] = tipScaled.x; dp[4] = tipScaled.y; dp[5] = tipScaled.z;
                         dropGeo.attributes.position.needsUpdate = true;
                         dropLine.computeLineDistances();
+
+                        targetRingGroup.position.set(tipScaled.x, 0.025, tipScaled.z);
+                    }
+
+                    // Update 3D Elevation & Azimuth Angle Arcs
+                    const showArcs = state.showAngles && growth > 0.35 && len > 0.6;
+                    if (showArcs && horizLen > 0.15) {
+                        floorDir.set(tipScaled.x, 0, tipScaled.z).normalize();
+                        const sys = getActiveAxisConfig();
+                        refHorizDir.copy(currentAxisBasis[sys.horiz1]);
+
+                        // Stagger arc radii slightly by slot so multi-vector arcs never overlap
+                        const baseRadius = Math.min(len * 0.44, 2.2 + (vecObj.slot % 4) * 0.36);
+
+                        // 1. Elevation Arc: from horizontal floor ray -> 3D force pole
+                        elevArc.update(floorDir, tipScaled, baseRadius, vecObj.elev, true, 1.32);
+
+                        // 2. Azimuth Arc: along floor plane from +horiz1 reference axis -> floor projection ray
+                        const azimRadius = Math.min(horizLen * 0.65, 2.45 + (vecObj.slot % 4) * 0.38);
+                        const azimFrom = refHorizDir.clone();
+                        azimFrom.y = 0.025;
+                        const azimTo = floorDir.clone();
+                        azimTo.y = 0.025;
+                        azimArc.update(azimFrom, azimTo, azimRadius, vecObj.azim, true, 1.30);
+                    } else {
+                        elevArc.update(floorDir, tipScaled, 1, 0, false);
+                        azimArc.update(floorDir, tipScaled, 1, 0, false);
                     }
 
                     // Position Sprite Label cleanly past vector tip
                     spriteObj.sprite.visible = growth > 0.2;
-                    if (tipScaled.lengthSq() > 0.001) {
-                        const dirOffset = tipScaled.clone().normalize().multiplyScalar(0.85);
+                    if (len > 0.03) {
+                        const dirOffset = tipScaled.clone().normalize().multiplyScalar(0.92);
                         spriteObj.sprite.position.copy(tipScaled).add(dirOffset);
-                        spriteObj.sprite.position.y += 0.35;
+                        spriteObj.sprite.position.y += 0.36;
                     } else {
                         spriteObj.sprite.position.set(0, 0.9, 0);
                     }
@@ -1301,12 +1556,18 @@
                 },
                 dispose() {
                     arrow.dispose();
+                    elevArc.dispose();
+                    azimArc.dispose();
                     triGeo.dispose();
                     triMat.dispose();
                     floorGeo.dispose();
                     floorMat.dispose();
                     dropGeo.dispose();
                     dropMat.dispose();
+                    outerRingGeo.dispose();
+                    outerRingMat.dispose();
+                    innerDotGeo.dispose();
+                    innerDotMat.dispose();
                     spriteObj.dispose();
                     vectorsGroup.remove(bundleGroup);
                 }
@@ -1314,7 +1575,7 @@
         }
 
         // ---------------------------------------------------------------------
-        // COORDINATE AXES, GRID & SPRITE LABELS (+X, -X, +Y, -Y, +Z, -Z, O)
+        // COORDINATE AXES, CHROME ORIGIN HUB, GRID & SPRITE LABELS
         // ---------------------------------------------------------------------
         function buildCoordinateSystem() {
             axisGroup = new THREE.Group();
@@ -1323,14 +1584,14 @@
             const makeAxisRod = (dirVec, length, isPositive) => {
                 const mat = new THREE.MeshStandardMaterial({
                     color: 0x94a3b8,
-                    roughness: 0.35,
-                    metalness: 0.25,
+                    roughness: 0.30,
+                    metalness: 0.45,
                     transparent: !isPositive,
                     opacity: isPositive ? 1.0 : 0.45
                 });
                 axisMaterials.push({ mat, isPositive });
 
-                const headLen = isPositive ? 0.42 : 0.28;
+                const headLen = isPositive ? 0.44 : 0.28;
                 const headRad = isPositive ? 0.14 : 0.09;
                 const rodRad  = isPositive ? 0.042 : 0.026;
                 const shaftLen = length - headLen;
@@ -1357,11 +1618,28 @@
                 negZ: makeAxisRod(new THREE.Vector3(0, 0, -1), 9.6, false)
             };
 
-            // Origin Sphere
-            const originMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.25, metalness: 0.4 });
-            axisMaterials.push({ mat: originMat, isPositive: true });
-            const originSphere = new THREE.Mesh(new THREE.SphereGeometry(0.16, 24, 24), originMat);
-            axisGroup.add(originSphere);
+            // Realistic Brushed Titanium Origin Gimbal Hub (O)
+            originHubGroup = new THREE.Group();
+            originCoreMat = new THREE.MeshPhysicalMaterial({
+                color: 0xe2e8f0,
+                roughness: 0.16,
+                metalness: 0.88,
+                clearcoat: 0.9,
+                clearcoatRoughness: 0.1
+            });
+            originRingMat = new THREE.MeshStandardMaterial({
+                color: 0x38bdf8,
+                roughness: 0.25,
+                metalness: 0.75
+            });
+            const coreSphere = new THREE.Mesh(new THREE.SphereGeometry(0.25, 32, 32), originCoreMat);
+            coreSphere.castShadow = true;
+
+            const equatorRing = new THREE.Mesh(new THREE.TorusGeometry(0.32, 0.024, 16, 48), originRingMat);
+            equatorRing.rotation.x = Math.PI / 2;
+
+            originHubGroup.add(coreSphere, equatorRing);
+            axisGroup.add(originHubGroup);
 
             // Floating Sprite Axis Labels
             const axisDefinitions = [
@@ -1371,7 +1649,7 @@
                 { key: 'negY', text: '−Y', pos: new THREE.Vector3(0, -10.3, 0) },
                 { key: 'posZ', text: '+Z', pos: new THREE.Vector3(0, 0, 12.6) },
                 { key: 'negZ', text: '−Z', pos: new THREE.Vector3(0, 0, -10.3) },
-                { key: 'origin', text: 'O',  pos: new THREE.Vector3(-0.55, -0.45, -0.55) }
+                { key: 'origin', text: 'O',  pos: new THREE.Vector3(-0.62, -0.52, -0.62) }
             ];
 
             axisDefinitions.forEach(item => {
@@ -1426,6 +1704,11 @@
         }
 
         function rebuildGrid(isDark) {
+            if (floorDisc) {
+                scene.remove(floorDisc);
+                floorDisc.geometry.dispose();
+                floorDisc.material.dispose();
+            }
             if (gridHelper) {
                 scene.remove(gridHelper);
                 gridHelper.geometry.dispose();
@@ -1435,12 +1718,29 @@
                     gridHelper.material.dispose();
                 }
             }
-            const centerCol = isDark ? 0x334155 : 0x94a3b8;
+
+            // Subtle Matte Engineering Floor Plane for Soft Contact Shadows
+            const floorGeo = new THREE.CircleGeometry(15.5, 64);
+            floorGeo.rotateX(-Math.PI / 2);
+            const floorMat = new THREE.MeshStandardMaterial({
+                color: isDark ? 0x0b1221 : 0xe2eaf4,
+                roughness: 0.85,
+                metalness: 0.08,
+                transparent: true,
+                opacity: isDark ? 0.55 : 0.72
+            });
+            floorDisc = new THREE.Mesh(floorGeo, floorMat);
+            floorDisc.position.y = -0.02;
+            floorDisc.receiveShadow = true;
+            floorDisc.visible = state.showGrid;
+            scene.add(floorDisc);
+
+            const centerCol = isDark ? 0x38bdf8 : 0x64748b;
             const lineCol   = isDark ? 0x1e293b : 0xcbd5e1;
             gridHelper = new THREE.GridHelper(22, 22, centerCol, lineCol);
-            gridHelper.position.y = -0.01;
+            gridHelper.position.y = -0.008;
             gridHelper.material.transparent = true;
-            gridHelper.material.opacity = isDark ? 0.52 : 0.65;
+            gridHelper.material.opacity = isDark ? 0.45 : 0.62;
             gridHelper.visible = state.showGrid;
             scene.add(gridHelper);
         }
@@ -1568,7 +1868,7 @@
 
             // Update 3D Sprite Label Text
             if (vecObj.meshBundle && vecObj.meshBundle.spriteObj) {
-                vecObj.meshBundle.spriteObj.redraw(`${vecObj.label}: ${Math.round(vecObj.mag)} N`, state.theme === 'dark');
+                vecObj.meshBundle.spriteObj.redraw(`${vecObj.label} · ${Math.round(vecObj.mag)} N`, state.theme === 'dark');
             }
 
             updateResultantUI();
@@ -1942,11 +2242,15 @@
 
             if (!scene) return;
 
-            scene.fog = new THREE.FogExp2(isDark ? 0x060a12 : 0xecf2f9, 0.012);
+            scene.fog = new THREE.FogExp2(isDark ? 0x060a12 : 0xecf2f9, 0.011);
 
-            ambientLight.intensity = isDark ? 0.78 : 0.98;
-            keyLight.intensity = isDark ? 0.95 : 0.75;
-            rimLight.intensity = isDark ? 0.55 : 0.35;
+            hemiLight.intensity = isDark ? 0.65 : 0.85;
+            ambientLight.intensity = isDark ? 0.45 : 0.65;
+            keyLight.intensity = isDark ? 1.35 : 1.15;
+            rimLight.intensity = isDark ? 0.85 : 0.55;
+            fillLight.intensity = isDark ? 0.45 : 0.40;
+
+            if (originCoreMat) originCoreMat.color.setHex(isDark ? 0xe2e8f0 : 0x94a3b8);
 
             const posAxisHex = isDark ? 0x94a3b8 : 0x334155;
             const negAxisHex = isDark ? 0x475569 : 0x94a3b8;
@@ -1957,11 +2261,13 @@
             // Re-render all axis sprite labels for crisp contrast
             axisSprites.forEach(sp => sp.redraw(sp.text, isDark));
 
-            // Re-render active vector & resultant sprite labels
+            // Re-render active vector, angle badges & resultant sprite labels
             state.vectors.forEach(v => {
                 if (v.meshBundle) {
-                    v.meshBundle.triMat.opacity = isDark ? 0.16 : 0.18;
-                    v.meshBundle.spriteObj.redraw(`${v.label}: ${Math.round(v.mag)} N`, isDark);
+                    v.meshBundle.triMat.opacity = isDark ? 0.15 : 0.17;
+                    v.meshBundle.spriteObj.redraw(`${v.label} · ${Math.round(v.mag)} N`, isDark);
+                    v.meshBundle.elevArc.labelSprite.redraw(`${Math.abs(v.elev).toFixed(1)}°`, isDark);
+                    v.meshBundle.azimArc.labelSprite.redraw(`${Math.abs(v.azim).toFixed(1)}°`, isDark);
                 }
             });
 
@@ -2026,9 +2332,11 @@
         };
 
         window.onToggleDisplay = function () {
+            state.showAngles = document.getElementById('toggle-angles').checked;
             state.showPlanes = document.getElementById('toggle-planes').checked;
             state.showGrid   = document.getElementById('toggle-grid').checked;
             if (gridHelper) gridHelper.visible = state.showGrid;
+            if (floorDisc) floorDisc.visible = state.showGrid;
         };
 
         // ---------------------------------------------------------------------
@@ -2046,6 +2354,10 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.outputColorSpace = THREE.SRGBColorSpace;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.12;
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             container.appendChild(renderer.domElement);
 
             // Smooth Damped OrbitControls
@@ -2071,17 +2383,35 @@
                 }
             });
 
-            // Studio Lighting
-            ambientLight = new THREE.AmbientLight(0xffffff, 0.78);
+            // Studio Four-Point + Hemisphere PBR Lighting
+            hemiLight = new THREE.HemisphereLight(0xe0f2fe, 0x0f172a, 0.65);
+            scene.add(hemiLight);
+
+            ambientLight = new THREE.AmbientLight(0xffffff, 0.45);
             scene.add(ambientLight);
 
-            keyLight = new THREE.DirectionalLight(0xffffff, 0.95);
+            keyLight = new THREE.DirectionalLight(0xffffff, 1.35);
             keyLight.position.set(14, 24, 18);
+            keyLight.castShadow = true;
+            keyLight.shadow.mapSize.width = 1024;
+            keyLight.shadow.mapSize.height = 1024;
+            keyLight.shadow.camera.near = 2;
+            keyLight.shadow.camera.far = 65;
+            const d = 16;
+            keyLight.shadow.camera.left = -d;
+            keyLight.shadow.camera.right = d;
+            keyLight.shadow.camera.top = d;
+            keyLight.shadow.camera.bottom = -d;
+            keyLight.shadow.bias = -0.0005;
             scene.add(keyLight);
 
-            rimLight = new THREE.DirectionalLight(0x7dd3fc, 0.55);
-            rimLight.position.set(-16, 10, -14);
+            rimLight = new THREE.DirectionalLight(0x38bdf8, 0.85);
+            rimLight.position.set(-16, 12, -14);
             scene.add(rimLight);
+
+            fillLight = new THREE.DirectionalLight(0xfde68a, 0.45);
+            fillLight.position.set(-10, -6, 14);
+            scene.add(fillLight);
 
             // Scene Layers
             buildCoordinateSystem();
@@ -2097,7 +2427,7 @@
             resultantGroup.add(chainLinesGroup, chainNodesGroup);
 
             // Emerald Green Resultant Arrow & Label
-            resultantArrow = createArrowMesh(0x10b981, 0.125, 0.80, 0.30, resultantGroup);
+            resultantArrow = createArrowMesh(0x10b981, 0.135, 0.82, 0.31, resultantGroup);
             resultantArrow.group.visible = false;
 
             resultantSpriteObj = createTextSprite('F_R: 0.0 N', {
